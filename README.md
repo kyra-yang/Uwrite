@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Uwrite
 
-## Getting Started
+A tiny web application for writing and organizing novels.  
+Supports **project/chapters** hierarchy, a rich text editor, autosave, tags, and search, and showing them with another users(this function will meet in the future).  
 
-First, run the development server:
+## Features
+1.  **Account system**: register / login / change password / logout / rename 
+2.  **Novel mode**: project (novel) with chapters creating/modifying
+3.  **text editor**: Tiptap with autosave and local draft recovery  
+4.  **Views**: dashboard (recent projects/chapters), project detail page  
+5.  **Search & tags**: fuzzy search by title, tags, or content  
+6.  **Responsive UI**: Tailwind CSS, mobile-friendly  
+7.  **One-click deployment**: Vercel + Neon (Postgres)
+8.  Export (future): export projects as Markdown/ZIP
+9.  show and comment(future): show your project and other could leave comments
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠 Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Frontend
+- [Next.js 14 (App Router)](https://nextjs.org/)  
+- [React](https://react.dev/)  
+- [TypeScript](https://www.typescriptlang.org/)  
+- [Tailwind CSS](https://tailwindcss.com/)  
+- [Tiptap](https://tiptap.dev/) editor  
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Backend
+- [Next.js API Routes](https://nextjs.org/docs/app/building-your-application/routing/router-handlers)  
+- [Prisma ORM](https://www.prisma.io/)  
+- [PostgreSQL](https://www.postgresql.org/)  
+- [NextAuth.js](https://next-auth.js.org/) (Credentials Provider)  
+- [bcrypt](https://www.npmjs.com/package/bcrypt)  
 
-## Learn More
+### Tools & Deployment
+- [Vercel](https://vercel.com/) (frontend + API hosting)  
+- [Neon](https://neon.tech/) / [Supabase](https://supabase.com/) (Postgres hosting)  
+- [GitHub Actions](https://github.com/features/actions) (CI/CD)  
 
-To learn more about Next.js, take a look at the following resources:
+### Testing
+- - [Jest](https://jestjs.io/)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
