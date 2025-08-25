@@ -4,11 +4,30 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 
-// define the correct schema for registration
+// schema for login
 const credentialsSchema = z.object({
   email: z.email(),
   password: z.string().min(6),
 });
+
+export async function authorizeCredentials(raw: unknown) {
+  const parsed = credentialsSchema.safeParse(raw);
+
+  if (!parsed.success) return null;
+
+  const { email, password } = parsed.data;
+
+  // if user or passwordHash not found
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user || !user.passwordHash) return null;
+
+  // if password not match
+  const ok = await bcrypt.compare(password, user.passwordHash);
+  if (!ok) return null;
+
+  // success login
+  return { id: user.id, email: user.email, name: user.name };
+}
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt' },
@@ -17,30 +36,12 @@ export const authOptions: NextAuthOptions = {
     Credentials({
       name: 'Credentials',
       credentials: { email: {}, password: {} },
-      // test the credentials input
-      async authorize(raw) {
-        const parsed = credentialsSchema.safeParse(raw);
-
-        if (!parsed.success) return null;
-
-        // no such user or password not exists
-        const { email, password } = parsed.data;
-        const user = await prisma.user.findUnique({ where: { email } });
-        if (!user || !user.passwordHash) return null;
-
-        // wrong password
-        const ok = await bcrypt.compare(password, user.passwordHash);
-        if (!ok) return null;
-
-        // success
-        return { id: user.id, email: user.email, name: user.name };
-      },
+      authorize: authorizeCredentials,
     }),
   ],
 
   callbacks: {
     async jwt({ token, user }) {
-      // if user first time logged in, add id and email to token
       if (user) {
         token.sub = user.id as string;
         token.email = user.email!;
@@ -49,7 +50,6 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      // logging in, add id and email to session
       if (token?.sub) {
         session.user = {
           ...(session.user || {}),
