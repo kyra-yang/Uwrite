@@ -7,9 +7,23 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String   
+  name          String
+  projects      Project[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 model Project {
   id        String   @id @default(cuid())
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id])
   title     String
+  synopsis  String?
+  visibility String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
