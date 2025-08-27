@@ -87,28 +87,24 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
       </div>
 
       <Reorder.Group axis="y" values={chapters} onReorder={handleDragEnd}>
-        {chapters.map((c) => (
-          <Reorder.Item
-            key={c.id}
-            value={c}
-            className="flex justify-between items-center border p-2 mb-2 rounded hover:bg-gray-50"
-          >
-            <div onClick={() => router.push(`/editor/${c.id}`)} className="cursor-pointer">
-              <span className="font-semibold">#{c.index + 1}</span> {c.title}
+        {chapters.map((c, i) => (
+          <Reorder.Item key={c.id} value={c} className="flex justify-between items-center border p-2 mb-2 rounded hover:bg-gray-50">
+            <div className="cursor-pointer" onClick={() => router.push(`/editor/${c.id}`)}>
+              <span className="font-semibold">#{i + 1}</span> {c.title}
             </div>
             <div className="flex gap-1">
-              <button
+            <button
                 onClick={() => moveChapter(c.id, 'up')}
                 className="px-2 py-1 text-sm bg-gray-200 rounded"
-              >
+            >
                 ↑
-              </button>
-              <button
+            </button>
+            <button
                 onClick={() => moveChapter(c.id, 'down')}
                 className="px-2 py-1 text-sm bg-gray-200 rounded"
-              >
+            >
                 ↓
-              </button>
+            </button>
             </div>
           </Reorder.Item>
         ))}
