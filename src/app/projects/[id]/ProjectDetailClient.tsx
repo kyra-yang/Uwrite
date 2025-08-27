@@ -62,6 +62,13 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
     });
   }
 
+  // delete chapter
+  async function deleteChapter(chapterId: string) {
+    if (!confirm('Are you sure to delete it?')) return;
+    await fetch(`/api/chapters/${chapterId}`, { method: 'DELETE' });
+    fetchChapters();
+  }
+
   // when end: save chapter and order
   function handleDragEnd(newOrder: Chapter[]) {
     setChapters(newOrder);
@@ -104,6 +111,12 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
                 className="px-2 py-1 text-sm bg-gray-200 rounded"
             >
                 ↓
+            </button>
+            <button
+                onClick={() => deleteChapter(c.id)}
+                className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-400 transition"
+              >
+                DELETE
             </button>
             </div>
           </Reorder.Item>

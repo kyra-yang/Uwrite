@@ -39,6 +39,13 @@ export default function DashboardClient() {
     fetchProjects();
   }
 
+  // delete project
+  async function deleteProject(projectId: string) {
+    if (!confirm('Are you sure to delete this project?')) return;
+    await fetch(`/api/projects/${projectId}`, { method: 'DELETE' });
+    fetchProjects();
+  }
+
   useEffect(() => {
     fetchProjects();
   }, []);
@@ -54,7 +61,10 @@ export default function DashboardClient() {
           placeholder="new project title"
           className="border px-2 py-1"
         />
-        <button onClick={createProject} className="w-full bg-blue-600 text-white py-2 rounded-md text-lg hover:bg-green-700 transition">
+        <button
+          onClick={createProject}
+          className="w-full bg-blue-600 text-white py-2 rounded-md text-lg hover:bg-green-700 transition"
+        >
           create
         </button>
       </div>
@@ -63,11 +73,27 @@ export default function DashboardClient() {
         {projects.map((p) => (
           <li
             key={p.id}
-            className="border p-2 cursor-pointer hover:bg-gray-100"
-            onClick={() => router.push(`/projects/${p.id}`)}
+            className="border p-2 flex justify-between items-center hover:bg-gray-100"
           >
-            <div className="font-semibold">{p.title}</div>
-            <div className="text-sm text-gray-600">{p.synopsis || '(no description)'}</div>
+            <div
+              className="cursor-pointer"
+              onClick={() => router.push(`/projects/${p.id}`)}
+            >
+              <div className="font-semibold">{p.title}</div>
+              <div className="text-sm text-gray-600">
+                {p.synopsis || '(no description)'}
+              </div>
+            </div>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteProject(p.id);
+              }}
+              className="ml-2 px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-400"
+            >
+              DELETE
+            </button>
           </li>
         ))}
       </ul>
