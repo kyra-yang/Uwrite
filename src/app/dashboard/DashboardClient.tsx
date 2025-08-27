@@ -51,11 +51,11 @@ export default function DashboardClient() {
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="新项目标题"
+          placeholder="new project title"
           className="border px-2 py-1"
         />
-        <button onClick={createProject} className="bg-blue-500 text-white px-3 py-1">
-          新建
+        <button onClick={createProject} className="w-full bg-blue-600 text-white py-2 rounded-md text-lg hover:bg-green-700 transition">
+          create
         </button>
       </div>
 
@@ -67,7 +67,7 @@ export default function DashboardClient() {
             onClick={() => router.push(`/projects/${p.id}`)}
           >
             <div className="font-semibold">{p.title}</div>
-            <div className="text-sm text-gray-600">{p.synopsis || '（无简介）'}</div>
+            <div className="text-sm text-gray-600">{p.synopsis || '(no description)'}</div>
           </li>
         ))}
       </ul>
