@@ -23,7 +23,37 @@ model Project {
   owner     User     @relation(fields: [ownerId], references: [id])
   title     String
   synopsis  String?
-  visibility String?
+  visibility Visibility @default(PRIVATE)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  chapters  Chapter[]
+  @@index([ownerId])
+}
+
+model Chapter {
+  id          String        @id @default(cuid())
+  projectId   String
+  project     Project       @relation(fields: [projectId], references: [id])
+  index       Int
+  title       String
+  contentJson Json?
+  contentHtml String?       @db.Text
+  plainText   String?       @db.Text
+  status      ChapterStatus @default(DRAFT)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([projectId, index])
+  @@index([projectId])
+}
+
+enum Visibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum ChapterStatus {
+  DRAFT
+  PUBLISHED
 }
