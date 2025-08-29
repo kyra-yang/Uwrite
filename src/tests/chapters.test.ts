@@ -1,7 +1,12 @@
 import { prisma } from '@/lib/prisma';
 import { POST as createChapter, GET as listChapters } from '@/app/api/chapters/route';
-import { DELETE as deleteChapter } from '@/app/api/chapters/[id]/route';
+import { DELETE as deleteChapter, PUT as updateChapter } from '@/app/api/chapters/[id]/route';
 import { POST as createProject } from '@/app/api/projects/route';
+
+// mock requireUser: always return our test user
+jest.mock('@/lib/authValidate', () => ({
+  requireUser: async () => ({ id: 'test-user-id', email: 'test@example.com', name: 'Tester' }),
+}))
 
 describe('Chapters API Handlers', () => {
   let projectId: string;
@@ -73,10 +78,30 @@ describe('Chapters API Handlers', () => {
     expect(data.items.find((c: any) => c.id === chapterId)).toBeTruthy();
   });
 
+  // update chapter
+  test('should update a chapter', async () => {
+    const req = new Request(`http://localhost/api/chapters/${chapterId}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        title: 'Updated Chapter',
+        contentJson: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello!' }] }] },
+        status: 'PUBLISHED',
+      }),
+    });
+    const res = await updateChapter(req, { params: Promise.resolve({ id: chapterId }) });
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.title).toBe('Updated Chapter');
+    expect(data.status).toBe('PUBLISHED');
+    expect(data.contentHtml).toMatch(/<p.*?>/)
+    expect(data.contentHtml).toContain('Hello!')
+  });
+  
   // delete chapter
   test('should delete a chapter', async () => {
     const req = new Request(`http://localhost/api/chapters/${chapterId}`, { method: 'DELETE' });
-    const res = await deleteChapter(req, { params: { id: chapterId } });
+    const res = await deleteChapter(req, { params: Promise.resolve({ id: chapterId }) });
     const data = await res.json();
 
     expect(res.status).toBe(200);

@@ -1,6 +1,11 @@
 import { prisma } from '@/lib/prisma';
 import { POST as createProject, GET as listProjects } from '@/app/api/projects/route';
-import { DELETE as deleteProject } from '@/app/api/projects/[id]/route';
+import { DELETE as deleteProject, PUT as updateProject } from '@/app/api/projects/[id]/route';
+
+// mock requireUser: always return our test user
+jest.mock('@/lib/authValidate', () => ({
+  requireUser: async () => ({ id: 'test-user-id', email: 'test@example.com', name: 'Tester' }),
+}))
 
 describe('Projects API Handlers', () => {
   let projectId: string;
@@ -48,10 +53,25 @@ describe('Projects API Handlers', () => {
     expect(data.items.find((p: any) => p.id === projectId)).toBeTruthy();
   });
 
+  // update project
+  test('should update a project', async () => {
+    const req = new Request(`http://localhost/api/projects/${projectId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ title: 'Updated Project', synopsis: 'new synopsis', visibility: 'PUBLIC' }),
+    });
+    const res = await updateProject(req, { params: Promise.resolve({ id: projectId }) })
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.title).toBe('Updated Project');
+    expect(data.synopsis).toBe('new synopsis');
+    expect(data.visibility).toBe('PUBLIC');
+  });
+
   // delete project
   test('should delete a project', async () => {
     const req = new Request(`http://localhost/api/projects/${projectId}`, { method: 'DELETE' });
-    const res = await deleteProject(req, { params: { id: projectId } });
+    const res = await deleteProject(req, { params: Promise.resolve({ id: projectId }) });
     const data = await res.json();
 
     expect(res.status).toBe(200);
