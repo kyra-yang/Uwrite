@@ -39,6 +39,7 @@ model Chapter {
   title       String
   contentJson Json?
   contentHtml String?       @db.Text
+  contentText String?       @db.Text
   plainText   String?       @db.Text
   status      ChapterStatus @default(DRAFT)
   createdAt   DateTime      @default(now())

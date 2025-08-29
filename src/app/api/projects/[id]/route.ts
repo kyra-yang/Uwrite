@@ -26,18 +26,36 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   try {
     const user = await requireUser();
     await assertOwnsProject(params.id, user.id);
-    const data = projectUpdateSchema.parse(await req.json());
+
+    // validate input
+    const body = await req.json();
+    const parsed = projectUpdateSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'VALIDATION_ERROR', details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+
     // update
     const updated = await prisma.project.update({
       where: { id: params.id },
-      data: data,
+      data: {
+        ...parsed.data,
+        updatedAt: new Date(),
+      },
     });
+
     return NextResponse.json(updated);
   } catch (e: any) {
     // any error
-    if (e.message === 'UNAUTHENTICATED') return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
-    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    return NextResponse.json({ error: 'Bad Request' }, { status: 400 });
+    if (e.message === 'UNAUTHENTICATED') {
+      return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
+    }
+    if (e.message === 'FORBIDDEN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 

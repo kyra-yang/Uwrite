@@ -21,7 +21,10 @@ export const chapterUpdateSchema = z.object({
   title: z.string().min(1).optional(),
   contentJson: z.any().optional(),
   status: z.enum(['DRAFT', 'PUBLISHED']).optional(),
-});
+}).refine(
+  (data) => Object.keys(data).length > 0,
+  { message: 'No fields to update' }
+);
 
 // 3. schema for reordering chapters within a project
 export const chapterReorderSchema = z.object({

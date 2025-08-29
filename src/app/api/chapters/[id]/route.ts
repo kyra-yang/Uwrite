@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/authValidate';
 import { chapterUpdateSchema } from '@/lib/validators';
+import { htmlToPlainText, jsonToHtml } from '@/lib/content';
 
 // helper function: check if the user owns the chapter (via project)
 async function assertOwnsChapter(chapterId: string, userId: string) {
@@ -34,20 +35,37 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   try {
     const user = await requireUser();
     await assertOwnsChapter(params.id, user.id);
-    const data = chapterUpdateSchema.parse(await req.json());
 
+    const body = await req.json();
+    const data = chapterUpdateSchema.parse(body);
+
+    let contentHtml: string | undefined;
+    let contentText: string | undefined;
+
+    if (data.contentJson) {
+      contentHtml = jsonToHtml(data.contentJson);
+      contentText = htmlToPlainText(contentHtml);
+    }
     // update
     const updated = await prisma.chapter.update({
       where: { id: params.id },
       data: {
-        ...data
+        ...data,
+        contentHtml,
+        contentText,
+        updatedAt: new Date(),
       },
     });
+
     return NextResponse.json(updated);
   } catch (e: any) {
     // any error
-    if (e.message === 'UNAUTHENTICATED') return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
-    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (e.message === 'UNAUTHENTICATED') {
+      return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
+    }
+    if (e.message === 'FORBIDDEN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
     return NextResponse.json({ error: 'Bad Request' }, { status: 400 });
   }
 }
