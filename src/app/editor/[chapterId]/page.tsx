@@ -20,6 +20,7 @@ export default function EditorPage() {
   const editor = useEditor({
     extensions: [StarterKit],
     content: '', // empty content initially
+    immediatelyRender: false, // prevent initial render
   })
 
   // get the chapter data
