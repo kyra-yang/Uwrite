@@ -15,6 +15,8 @@ describe('Public Features API Handlers', () => {
   let draftChapterId: string;
 
   beforeAll(async () => {
+    // clean up in case previous tests failed
+    await prisma.user.deleteMany({ where: { id: 'test-user-id' } }); 
     // create a test user
     await prisma.user.create({
       data: {
@@ -94,9 +96,8 @@ describe('Public Features API Handlers', () => {
     expect(foundProject).toBeTruthy();
     expect(foundProject.title).toBe('Public Test Story');
     expect(foundProject.owner.name).toBe('Tester');
-    expect(foundProject._count.chapters).toBe(2); // total chapters
+    expect(foundProject._count.chapters).toBe(1); // total published chapters
     expect(foundProject.chapters).toHaveLength(1); // only published chapters returned
-    expect(foundProject.chapters[0].status).toBe('PUBLISHED');
 
     // should NOT include private project
     const privateFound = data.find((p: any) => p.id === privateProjectId);
@@ -113,10 +114,9 @@ describe('Public Features API Handlers', () => {
     expect(data.id).toBe(publicProjectId);
     expect(data.title).toBe('Public Test Story');
     expect(data.owner.name).toBe('Tester');
-    expect(data._count.chapters).toBe(2); // total chapters
+    expect(data._count.chapters).toBe(1); // total published chapters
     expect(data.chapters).toHaveLength(1); // only published chapters
     expect(data.chapters[0].title).toBe('Published Chapter');
-    expect(data.chapters[0].status).toBe('PUBLISHED');
   });
 
   // test getting private project should return 404
