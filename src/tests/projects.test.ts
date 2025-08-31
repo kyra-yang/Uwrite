@@ -23,8 +23,11 @@ describe('Projects API Handlers', () => {
   });
 
   afterAll(async () => {
-    // delete test user
-    await prisma.user.delete({ where: { id: 'test-user-id' } });
+    // if exists, delete the test user
+    const user = await prisma.user.findUnique({ where: { id: 'test-user-id' } });
+    if (user) {
+      await prisma.user.delete({ where: { id: 'test-user-id' } });
+    }
   });
 
   // create project
