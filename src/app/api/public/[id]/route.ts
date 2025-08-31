@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
-    const projectId = params.id;
+
+    const { id: projectId } = await ctx.params;
 
     const project = await prisma.project.findFirst({
       where: {
@@ -27,7 +25,9 @@ export async function GET(
         },
         _count: {
           select: {
-            chapters: true
+            chapters: {
+              where: { status: 'PUBLISHED' } 
+            }
           }
         },
         chapters: {

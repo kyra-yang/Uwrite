@@ -22,19 +22,21 @@ export async function GET() {
         },
         _count: {
           select: {
-            chapters: true
+            chapters: {
+              where: { status: 'PUBLISHED' } 
+            }
           }
         },
         chapters: {
-            where: {
-                status: 'PUBLISHED',
-            },
-            select: {
-                id: true,
-                title: true,
-                index: true,
-                contentHtml: true,
-            }
+          where: {
+              status: 'PUBLISHED',
+          },
+          select: {
+            id: true,
+            title: true,
+            index: true,
+            contentHtml: true,
+          }
         }
       },
       
