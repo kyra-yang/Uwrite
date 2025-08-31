@@ -8,6 +8,7 @@ type Chapter = {
   id: string
   title: string
   index: number
+  status: 'DRAFT' | 'PUBLISHED'
 }
 
 type Project = {
@@ -62,6 +63,34 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
     })
     setNewChapterTitle('')
     fetchChapters()
+  }
+
+  // update chapter status
+  async function updateChapterStatus(chapterId: string, newStatus: 'DRAFT' | 'PUBLISHED') {
+    try {
+      const res = await fetch(`/api/chapters/${chapterId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      
+      if (!res.ok) throw new Error('Failed to update status')
+      
+      // Update local state
+      setChapters(prevChapters => 
+        prevChapters.map(chapter => 
+          chapter.id === chapterId 
+            ? { ...chapter, status: newStatus }
+            : chapter
+        )
+      )
+      
+      alert(`Chapter ${newStatus.toLowerCase()} successfully!`)
+    } catch (error) {
+      // any error
+      console.error('Error updating chapter status:', error)
+      alert('Failed to update chapter status')
+    }
   }
 
   // move chapter up or down
@@ -155,7 +184,7 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
         />
         <button
           onClick={createChapter}
-          className="bg-green-500 text-white px-3 py-1 hover:bg-blue-700 transition"
+          className="bg-green-500 text-white px-3 py-1 hover:bg-green-700 transition"
         >
           create
         </button>
@@ -166,30 +195,58 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
           <Reorder.Item
             key={c.id}
             value={c}
-            className="flex justify-between items-center border p-2 mb-2 rounded hover:bg-gray-50"
+            className="flex justify-between items-center border p-3 mb-2 rounded hover:bg-gray-50"
           >
-            <div
-              className="cursor-pointer"
-              onClick={() => router.push(`/editor/${c.id}`)}
-            >
-              <span className="font-semibold">#{i + 1}</span> {c.title}
+            <div className="flex items-center gap-3">
+              <div
+                className="cursor-pointer flex-1"
+                onClick={() => router.push(`/editor/${c.id}`)}
+              >
+                <span className="font-semibold">#{i + 1}</span> {c.title}
+              </div>
+              
+              {/* Status Badge */}
+              <span className={`px-2 py-1 text-xs rounded-full ${
+                c.status === 'PUBLISHED' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-yellow-100 text-yellow-800'
+              }`}>
+                {c.status}
+              </span>
             </div>
+
             <div className="flex gap-1">
+              {/* Status Toggle Button */}
+              <button
+                onClick={() => updateChapterStatus(
+                  c.id, 
+                  c.status === 'DRAFT' ? 'PUBLISHED' : 'DRAFT'
+                )}
+                className={`px-2 py-1 text-sm rounded transition ${
+                  c.status === 'DRAFT'
+                    ? 'bg-green-500 text-white hover:bg-green-600'
+                    : 'bg-yellow-500 text-white hover:bg-yellow-600'
+                }`}
+                title={c.status === 'DRAFT' ? 'Publish chapter' : 'Unpublish chapter'}
+              >
+                {c.status === 'DRAFT' ? 'PUBLISH' : 'UNPUBLISH'}
+              </button>
+              
               <button
                 onClick={() => moveChapter(c.id, 'up')}
-                className="px-2 py-1 text-sm bg-gray-200 rounded"
+                className="px-2 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
               >
                 ↑
               </button>
               <button
                 onClick={() => moveChapter(c.id, 'down')}
-                className="px-2 py-1 text-sm bg-gray-200 rounded"
+                className="px-2 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
               >
                 ↓
               </button>
               <button
                 onClick={() => deleteChapter(c.id)}
-                className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-400 transition"
+                className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition"
               >
                 DELETE
               </button>
