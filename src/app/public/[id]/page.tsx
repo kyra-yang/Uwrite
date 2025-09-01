@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import LikeButton from '@/components/LikeButton';
+import CommentsSection from '@/components/CommentsSection';
 
 interface Chapter {
   id: string;
@@ -22,9 +24,10 @@ interface ProjectDetail {
     id: string;
     name: string;
   };
-  _count: {
-    chapters: number;
-  };
+  chapterCount: number;
+  likes: number;
+  comments: number;
+  liked: boolean;
   chapters: Chapter[];
 }
 
@@ -112,8 +115,29 @@ export default function ProjectDetailPage() {
               <p className="text-gray-700 mb-4">{project.synopsis}</p>
             )}
             
+            {/* likes and comments */}
+            <div className="flex items-center gap-6 mb-4">
+              <LikeButton 
+                projectId={project.id}
+                initialLikeCount={project.likes}
+                initialLiked={project.liked}
+              />
+              
+              <div className="flex items-center gap-2 text-gray-600">
+                <span className="text-lg">💬</span>
+                <span>{project.comments} comments</span>
+              </div>
+              
+              <Link
+                href={`/public/${project.id}/comments`}
+                className="text-blue-600 hover:text-blue-800 underline text-sm"
+              >
+                View all comments
+              </Link>
+            </div>
+            
             <div className="flex gap-4 text-sm text-gray-600">
-              <span>{project.chapters.length} of {project._count.chapters} chapters published</span>
+              <span>{project.chapters.length} of {project.chapterCount} chapters published</span>
               <span>Last updated: {new Date(project.updatedAt).toLocaleDateString()}</span>
             </div>
           </div>
@@ -178,6 +202,11 @@ export default function ProjectDetailPage() {
             </div>
           </div>
         )}
+
+        {/* comments */}
+        <div className="mt-12">
+          <CommentsSection projectId={projectId} />
+        </div>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import LikeButton from '@/components/LikeButton';
 
 interface Project {
   id: string;
@@ -13,15 +14,17 @@ interface Project {
     id: string;
     name: string;
   };
-  _count: {
-    chapters: number;
-  };
+  chapterCount: number;
+  likes: number;
+  comments: number;
+  // Whether the current user has liked this project
+  liked: boolean;
   chapters: {
     id: string;
     title: string;
     index: number;
     contentHtml: string;
-  };
+  }[];
 }
 
 export default function PublicPage() {
@@ -87,9 +90,34 @@ export default function PublicPage() {
                 )}
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">
-                    {project._count.chapters} chapters
-                  </span>
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm text-gray-600">
+                      {project.chapterCount} chapters
+                    </span>
+                    
+                    {/* like button */}
+                    <LikeButton 
+                      projectId={project.id}
+                      initialLikeCount={project.likes}
+                      initialLiked={project.liked}
+                      isLoggedIn={true}
+                    />
+                    
+                    {/* comment numbers */}
+                    <div className="flex items-center gap-1 text-gray-600 text-sm">
+                      <span>💬</span>
+                      <span>{project.comments}</span>
+                    </div>
+                    
+                    {/* view comments */}
+                    <Link
+                      href={`/public/${project.id}/comments`}
+                      className="text-blue-600 text-sm hover:underline"
+                    >
+                      View comments
+                    </Link>
+                  </div>
+                  
                   <Link
                     href={`/public/${project.id}`}
                     className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
