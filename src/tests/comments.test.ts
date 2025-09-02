@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { GET as getComments, POST as createComment } from '@/app/api/projects/[id]/comments/route';
+import { POST as registerHandler } from '@/app/api/register/route';
 import { getServerSession } from 'next-auth';
 import { NextRequest } from 'next/server';
 
@@ -29,34 +30,48 @@ describe('Comment API Handlers', () => {
   let otherUserId: string;
   let publicProjectId: string;
   let privateProjectId: string;
+  const testEmail = `test_${Date.now()}@example.com`;
+  const testPassword = 'password123';
+  const otherUserEmail = `other_${Date.now()}@example.com`;
 
   beforeAll(async () => {
+    // Create test users using register endpoint
+    const testUserReq = new Request('http://localhost/api/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: testEmail,
+        password: testPassword,
+        name: 'Tester',
+      }),
+    });
+
+    const testUserRes = await registerHandler(testUserReq);
+    const testUserData = await testUserRes.json();
+    userId = testUserData.id;
+
+    const otherUserReq = new Request('http://localhost/api/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: otherUserEmail,
+        password: testPassword,
+        name: 'Other User',
+      }),
+    });
+
+    const otherUserRes = await registerHandler(otherUserReq);
+    const otherUserData = await otherUserRes.json();
+    otherUserId = otherUserData.id;
+
     // Clean up in correct order (child records first)
     await prisma.comment.deleteMany({});
     await prisma.chapter.deleteMany({});
-    await prisma.project.deleteMany({ where: { ownerId: { in: ['test-user-id', 'other-user-id'] } } });
-    await prisma.user.deleteMany({ where: { id: { in: ['test-user-id', 'other-user-id'] } } });
-
-    // create test users
-    await prisma.user.create({
-      data: {
-        id: 'test-user-id',
-        email: 'test@example.com',
-        passwordHash: 'fake',
-        name: 'Tester',
-      },
-    });
-    userId = 'test-user-id';
-
-    await prisma.user.create({
-      data: {
-        id: 'other-user-id',
-        email: 'other@example.com',
-        passwordHash: 'fake',
-        name: 'Other User',
-      },
-    });
-    otherUserId = 'other-user-id';
+    await prisma.project.deleteMany({ where: { ownerId: { in: [userId, otherUserId] } } });
 
     // create a public project
     const publicProject = await prisma.project.create({
@@ -201,7 +216,7 @@ describe('Comment API Handlers', () => {
     // test comment validation
     test('should return 400 for empty comment', async () => {
       mockGetServerSession.mockResolvedValue({
-        user: { id: userId, email: 'test@example.com' }
+        user: { id: userId, email: testEmail }
       } as any);
 
       const req = new NextRequest(`http://localhost/api/projects/${publicProjectId}/comments`, {
@@ -217,7 +232,7 @@ describe('Comment API Handlers', () => {
 
     test('should return 400 for whitespace-only comment', async () => {
       mockGetServerSession.mockResolvedValue({
-        user: { id: userId, email: 'test@example.com' }
+        user: { id: userId, email: testEmail }
       } as any);
 
       const req = new NextRequest(`http://localhost/api/projects/${publicProjectId}/comments`, {
@@ -234,7 +249,7 @@ describe('Comment API Handlers', () => {
     // test project validation
     test('should return 404 for non-existent project', async () => {
       mockGetServerSession.mockResolvedValue({
-        user: { id: userId, email: 'test@example.com' }
+        user: { id: userId, email: testEmail }
       } as any);
 
       const fakeId = 'non-existent-id';
@@ -251,7 +266,7 @@ describe('Comment API Handlers', () => {
 
     test('should return 404 for private project', async () => {
       mockGetServerSession.mockResolvedValue({
-        user: { id: userId, email: 'test@example.com' }
+        user: { id: userId, email: testEmail }
       } as any);
 
       const req = new NextRequest(`http://localhost/api/projects/${privateProjectId}/comments`, {
@@ -268,7 +283,7 @@ describe('Comment API Handlers', () => {
     // test successful comment creation
     test('should create a comment successfully', async () => {
       mockGetServerSession.mockResolvedValue({
-        user: { id: userId, email: 'test@example.com' }
+        user: { id: userId, email: testEmail }
       } as any);
 
       const commentContent = 'This is a test comment';
@@ -284,7 +299,7 @@ describe('Comment API Handlers', () => {
       expect(data.userId).toBe(userId);
       expect(data.projectId).toBe(publicProjectId);
       expect(data.user.name).toBe('Tester');
-      expect(data.user.email).toBe('test@example.com');
+      expect(data.user.email).toBe(testEmail);
 
       // verify comment was created in database
       const commentInDb = await prisma.comment.findUnique({
@@ -296,7 +311,7 @@ describe('Comment API Handlers', () => {
 
     test('should trim whitespace from comment content', async () => {
       mockGetServerSession.mockResolvedValue({
-        user: { id: userId, email: 'test@example.com' }
+        user: { id: userId, email: testEmail }
       } as any);
 
       const commentContent = '  This comment has whitespace  ';
@@ -315,7 +330,7 @@ describe('Comment API Handlers', () => {
     test('should allow multiple users to comment on the same project', async () => {
       // User 1 comments
       mockGetServerSession.mockResolvedValue({
-        user: { id: userId, email: 'test@example.com' }
+        user: { id: userId, email: testEmail }
       } as any);
 
       const req1 = new NextRequest(`http://localhost/api/projects/${publicProjectId}/comments`, {
@@ -329,7 +344,7 @@ describe('Comment API Handlers', () => {
 
       // User 2 comments
       mockGetServerSession.mockResolvedValue({
-        user: { id: otherUserId, email: 'other@example.com' }
+        user: { id: otherUserId, email: otherUserEmail }
       } as any);
 
       const req2 = new NextRequest(`http://localhost/api/projects/${publicProjectId}/comments`, {
@@ -350,7 +365,7 @@ describe('Comment API Handlers', () => {
 
     test('should allow same user to create multiple comments', async () => {
       mockGetServerSession.mockResolvedValue({
-        user: { id: userId, email: 'test@example.com' }
+        user: { id: userId, email: testEmail }
       } as any);
 
       // First comment
@@ -379,7 +394,7 @@ describe('Comment API Handlers', () => {
     // test error handling
     test('should handle database errors gracefully', async () => {
       mockGetServerSession.mockResolvedValue({
-        user: { id: userId, email: 'test@example.com' }
+        user: { id: userId, email: testEmail }
       } as any);
 
       // use invalid project ID to trigger database error
@@ -401,7 +416,7 @@ describe('Comment API Handlers', () => {
     test('should retrieve comments after creating them', async () => {
       // Create a comment first
       mockGetServerSession.mockResolvedValue({
-        user: { id: userId, email: 'test@example.com' }
+        user: { id: userId, email: testEmail }
       } as any);
 
       const createReq = new NextRequest(`http://localhost/api/projects/${publicProjectId}/comments`, {
@@ -424,7 +439,7 @@ describe('Comment API Handlers', () => {
 
     test('should return comments in correct order (newest first)', async () => {
       mockGetServerSession.mockResolvedValue({
-        user: { id: userId, email: 'test@example.com' }
+        user: { id: userId, email: testEmail }
       } as any);
 
       // Create first comment

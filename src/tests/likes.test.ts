@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { POST as likeProject } from '@/app/api/projects/[id]/likes/route';
+import { POST as registerHandler } from '@/app/api/register/route';
 import { getServerSession } from 'next-auth';
 import { NextRequest } from 'next/server';
 
@@ -9,38 +10,52 @@ const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getS
 
 describe('Like Project API Handler', () => {
   let userId: string;
+  let otherUserId: string;
   let publicProjectId: string;
   let privateProjectId: string;
-  let otherUserId: string;
+  const testEmail = `test_${Date.now()}@example.com`;
+  const testPassword = 'password123';
+  const otherUserEmail = `other_${Date.now()}@example.com`;
 
   beforeAll(async () => {
-    // Clean up in the correct order (child records first, then parent records)
+    // Create test users using register endpoint
+    const testUserReq = new Request('http://localhost/api/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: testEmail,
+        password: testPassword,
+        name: 'Tester',
+      }),
+    });
+
+    const testUserRes = await registerHandler(testUserReq);
+    const testUserData = await testUserRes.json();
+    userId = testUserData.id;
+
+    const otherUserReq = new Request('http://localhost/api/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: otherUserEmail,
+        password: testPassword,
+        name: 'Other User',
+      }),
+    });
+
+    const otherUserRes = await registerHandler(otherUserReq);
+    const otherUserData = await otherUserRes.json();
+    otherUserId = otherUserData.id;
+
+    // Clean up in the correct order
     await prisma.like.deleteMany({});
     await prisma.comment.deleteMany({});
     await prisma.chapter.deleteMany({});
     await prisma.project.deleteMany({});
-    await prisma.user.deleteMany({});
-
-    // create test users
-    const testUser = await prisma.user.create({
-      data: {
-        id: 'test-user-id',
-        email: 'test@example.com',
-        passwordHash: 'fake',
-        name: 'Tester',
-      },
-    });
-    userId = testUser.id;
-
-    const otherUser = await prisma.user.create({
-      data: {
-        id: 'other-user-id',
-        email: 'other@example.com',
-        passwordHash: 'fake',
-        name: 'Other User',
-      },
-    });
-    otherUserId = otherUser.id;
 
     // create a public project
     const publicProject = await prisma.project.create({
@@ -63,14 +78,6 @@ describe('Like Project API Handler', () => {
       },
     });
     privateProjectId = privateProject.id;
-
-    // Verify the records were created
-    console.log('Test setup completed:', {
-      userId,
-      otherUserId, 
-      publicProjectId,
-      privateProjectId
-    });
   });
 
   afterAll(async () => {
@@ -79,7 +86,7 @@ describe('Like Project API Handler', () => {
     await prisma.comment.deleteMany({});
     await prisma.chapter.deleteMany({});
     await prisma.project.deleteMany({});
-    await prisma.user.deleteMany({});
+    await prisma.user.deleteMany({ where: { id: { in: [userId, otherUserId] } } });
   });
 
   beforeEach(async () => {
@@ -122,7 +129,7 @@ describe('Like Project API Handler', () => {
   // test project validation
   test('should return 404 for non-existent project', async () => {
     mockGetServerSession.mockResolvedValue({
-      user: { id: userId, email: 'test@example.com' }
+      user: { id: userId, email: testEmail }
     } as any);
 
     const fakeId = 'non-existent-id';
@@ -136,7 +143,7 @@ describe('Like Project API Handler', () => {
 
   test('should return 404 for private project', async () => {
     mockGetServerSession.mockResolvedValue({
-      user: { id: userId, email: 'test@example.com' }
+      user: { id: userId, email: testEmail }
     } as any);
 
     const req = new NextRequest(`http://localhost/api/projects/${privateProjectId}/likes`, { method: 'POST' });
@@ -150,22 +157,16 @@ describe('Like Project API Handler', () => {
   // test like functionality
   test('should create a like when user has not liked the project', async () => {
     mockGetServerSession.mockResolvedValue({
-      user: { id: userId, email: 'test@example.com' }
+      user: { id: userId, email: testEmail }
     } as any);
 
-    // Debug: verify project exists and is public
     const projectCheck = await prisma.project.findUnique({
       where: { id: publicProjectId }
     });
-    console.log('Project check:', projectCheck);
 
     const req = new NextRequest(`http://localhost/api/projects/${publicProjectId}/likes`, { method: 'POST' });
     const res = await likeProject(req, { params: Promise.resolve({ id: publicProjectId }) });
     const data = await res.json();
-
-    // Debug: log the response
-    console.log('Response status:', res.status);
-    console.log('Response data:', data);
 
     expect(res.status).toBe(200);
     expect(data.liked).toBe(true);
@@ -179,7 +180,7 @@ describe('Like Project API Handler', () => {
 
   test('should remove like when user has already liked the project', async () => {
     mockGetServerSession.mockResolvedValue({
-      user: { id: userId, email: 'test@example.com' }
+      user: { id: userId, email: testEmail }
     } as any);
 
     // First, create a like through the API to ensure proper state
@@ -208,7 +209,7 @@ describe('Like Project API Handler', () => {
   // test toggle behavior
   test('should handle like -> unlike -> like sequence', async () => {
     mockGetServerSession.mockResolvedValue({
-      user: { id: userId, email: 'test@example.com' }
+      user: { id: userId, email: testEmail }
     } as any);
 
     const req = new NextRequest(`http://localhost/api/projects/${publicProjectId}/likes`, { method: 'POST' });
@@ -236,7 +237,7 @@ describe('Like Project API Handler', () => {
   test('should allow multiple users to like the same project', async () => {
     // User 1 likes project
     mockGetServerSession.mockResolvedValue({
-      user: { id: userId, email: 'test@example.com' }
+      user: { id: userId, email: testEmail }
     } as any);
 
     const req1 = new NextRequest(`http://localhost/api/projects/${publicProjectId}/likes`, { method: 'POST' });
@@ -247,7 +248,7 @@ describe('Like Project API Handler', () => {
 
     // User 2 likes same project
     mockGetServerSession.mockResolvedValue({
-      user: { id: otherUserId, email: 'other@example.com' }
+      user: { id: otherUserId, email: otherUserEmail }
     } as any);
 
     const req2 = new NextRequest(`http://localhost/api/projects/${publicProjectId}/likes`, { method: 'POST' });
@@ -271,7 +272,7 @@ describe('Like Project API Handler', () => {
   // test user can only like each project once
   test('should prevent duplicate likes', async () => {
     mockGetServerSession.mockResolvedValue({
-      user: { id: userId, email: 'test@example.com' }
+      user: { id: userId, email: testEmail }
     } as any);
 
     // Create initial like through API
@@ -300,7 +301,7 @@ describe('Like Project API Handler', () => {
   // test error handling
   test('should handle database errors gracefully', async () => {
     mockGetServerSession.mockResolvedValue({
-      user: { id: userId, email: 'test@example.com' }
+      user: { id: userId, email: testEmail }
     } as any);
 
     // use invalid project ID to trigger database error

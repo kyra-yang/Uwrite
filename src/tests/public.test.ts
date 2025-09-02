@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { GET as getPublicProjects } from '@/app/api/public/route';
 import { GET as getPublicProject } from '@/app/api/public/[id]/route';
+import { POST as registerHandler } from '@/app/api/register/route';
 import { getServerSession } from 'next-auth';
 
 // Mock getServerSession to avoid headers() call
@@ -30,23 +31,30 @@ describe('Public Features API Handlers', () => {
   let privateProjectId: string;
   let publishedChapterId: string;
   let draftChapterId: string;
+  const testEmail = `test_${Date.now()}@example.com`;
+  const testPassword = 'password123';
 
   beforeAll(async () => {
+    // Create test user using register endpoint
+    const registerReq = new Request('http://localhost/api/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: testEmail,
+        password: testPassword,
+        name: 'Tester',
+      }),
+    });
+
+    const registerRes = await registerHandler(registerReq);
+    const userData = await registerRes.json();
+    userId = userData.id;
+
     // Clean up in correct order (child records first)
     await prisma.chapter.deleteMany({});
-    await prisma.project.deleteMany({ where: { ownerId: 'test-user-id' } });
-    await prisma.user.deleteMany({ where: { id: 'test-user-id' } });
-
-    // create a test user
-    await prisma.user.create({
-      data: {
-        id: 'test-user-id',
-        email: 'test@example.com',
-        passwordHash: 'fake',
-        name: 'Tester',
-      },
-    });
-    userId = 'test-user-id';
+    await prisma.project.deleteMany({ where: { ownerId: userId } });
 
     // create a public project with chapters
     const publicProject = await prisma.project.create({
@@ -105,7 +113,7 @@ describe('Public Features API Handlers', () => {
       });
     }
     if (userId) {
-      await prisma.user.deleteMany({ where: { id: userId } });
+      await prisma.user.delete({ where: { id: userId } });
     }
   });
 
