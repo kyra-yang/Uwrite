@@ -21,6 +21,7 @@ interface CommentsSectionProps {
   maxDisplay?: number;
   isLoggedIn?: boolean;
   userId?: string;
+  size?: 'sm' | 'md' | 'lg';
 }
 
 export default function CommentsSection({ 
@@ -28,12 +29,38 @@ export default function CommentsSection({
   showAll = false, 
   maxDisplay = 3,
   isLoggedIn = false,
-  userId
+  userId,
+  size = 'md'
 }: CommentsSectionProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [newComment, setNewComment] = useState('');
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  // size config
+  const sizeConfig = {
+    sm: {
+      button: 'px-3 py-1.5 text-xs',
+      icon: 'w-4 h-4',
+      text: 'text-xs font-semibold',
+      scale: 'scale-110'
+    },
+    md: {
+      button: 'px-4 py-2 text-sm',
+      icon: 'w-5 h-5',
+      text: 'text-sm font-semibold',
+      scale: 'scale-120'
+    },
+    lg: {
+      button: 'px-5 py-2.5 text-base',
+      icon: 'w-6 h-6',
+      text: 'text-base font-semibold',
+      scale: 'scale-125'
+    }
+  };
+
+  const config = sizeConfig[size];
 
   // fetch comments
   const fetchComments = async () => {
@@ -68,6 +95,8 @@ export default function CommentsSection({
     }
 
     setSubmitting(true);
+    setIsAnimating(true);
+    
     try {
       const response = await fetch(`/api/projects/${projectId}/comments`, {
         method: 'POST',
@@ -84,9 +113,13 @@ export default function CommentsSection({
       const newCommentData = await response.json();
       setComments(prev => [newCommentData, ...prev]);
       setNewComment('');
+      
+      // Reset animation after a short delay
+      setTimeout(() => setIsAnimating(false), 600);
     } catch (error) {
       console.error('submit comment failed: ', error);
       alert('submit comment failed, please try again.');
+      setIsAnimating(false);
     } finally {
       setSubmitting(false);
     }
@@ -107,14 +140,60 @@ export default function CommentsSection({
   const displayComments = showAll ? comments : comments.slice(0, maxDisplay);
   const hasMoreComments = !showAll && comments.length > maxDisplay;
 
+  // Comment Button Component
+  const CommentButton = () => (
+    <button
+      onClick={() => {
+        if (!isLoggedIn) {
+          alert('please login first to comment');
+          return;
+        }
+        document.querySelector('textarea')?.focus();
+      }}
+      disabled={loading}
+      className={`
+        inline-flex items-center gap-2 rounded-full transition-all duration-300
+        ${config.button}
+        bg-white border border-gray-200 text-gray-600 shadow-sm hover:shadow-md hover:border-gray-300
+        ${loading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer hover:-translate-y-0.5'}
+        ${isAnimating ? 'transform-gpu' : ''}
+      `}
+      title={isLoggedIn ? 'Add comment' : 'Login to comment'}
+    >
+      <div className="relative">
+        <MessageCircle 
+          className={`
+            ${config.icon} transition-all duration-300 text-gray-400 group-hover:text-blue-400
+            ${loading ? 'animate-pulse' : ''}
+            ${isAnimating ? `transform ${config.scale}` : ''}
+          `}
+        />
+        {isAnimating && (
+          <div className="absolute inset-0 animate-ping">
+            <MessageCircle className={`${config.icon} text-blue-200 opacity-75`} />
+          </div>
+        )}
+      </div>
+      <span className={`
+        ${config.text} transition-colors duration-300 text-gray-700
+        min-w-[1.5em] text-center
+      `}>
+        {comments.length}
+      </span>
+    </button>
+  );
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
-      {/* title */}
-      <div className="flex items-center gap-2 mb-4">
-        <MessageCircle className="w-5 h-5 text-blue-500" />
-        <h3 className="text-lg font-semibold text-gray-800">
-          comment ({comments.length})
-        </h3>
+      {/* title with comment button */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <MessageCircle className="w-5 h-5 text-blue-500" />
+          <h3 className="text-lg font-semibold text-gray-800">
+            comment ({comments.length})
+          </h3>
+        </div>
+        <CommentButton />
       </div>
 
       {/* input */}

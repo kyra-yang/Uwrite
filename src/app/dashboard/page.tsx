@@ -21,41 +21,44 @@ export default async function DashboardPage() {
 
   // Success: have logined
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto py-8 px-4">
-        <div className="bg-white rounded-lg shadow-md p-8">
-          <h1 className="text-3xl font-bold text-center mb-6">Dashboard</h1>
-          
-          <div className="text-center mb-8">
-            <p className="text-lg text-gray-700">
-              Welcome, <strong>{session.user.name}</strong> ({session.user.email})
-            </p>
-          </div>
+    <div className="min-h-screen bg-yellow-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl bg-white rounded-lg shadow-md p-8 flex flex-col mx-auto my-4" style={{minHeight: '600px'}}>
+        <h1 className="text-7xl font-bold text-center mb-10">Dashboard</h1>
+        
+        <div className="text-center mb-8">
+          <p className="text-lg text-gray-700">
+            Welcome, <strong>{session.user.name}</strong> ({session.user.email})
+          </p>
+        </div>
 
-          {/* main buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <Link
+        {/* main buttons */}
+        <div className="flex-grow flex items-center justify-center -mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 w-full max-w-2xl">
+            <Link 
               href="/dashboard/projects"
-              className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors shadow-md"
+              className="group block"
             >
-              GO TO WRITING
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg px-8 py-6 text-center hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 group-hover:shadow-lg h-full min-h-[140px] flex flex-col justify-center">
+                <h2 className="text-2xl font-semibold text-blue-800 mb-2">GO TO WRITING</h2>
+                <p className="text-blue-600 text-lg">write down your ideas!</p>
+              </div>
             </Link>
 
             <Link 
               href="/public"
               className="group block"
             >
-              <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6 text-center hover:bg-green-100 hover:border-green-300 transition-all duration-200 group-hover:shadow-lg">
-                <h2 className="text-xl font-semibold text-green-800 mb-2">GO TO BROWSING</h2>
-                <p className="text-green-600">browse every pubilc works!</p>
+              <div className="bg-green-50 border-2 border-green-200 rounded-lg px-8 py-6 text-center hover:bg-green-100 hover:border-green-300 transition-all duration-200 group-hover:shadow-lg h-full min-h-[140px] flex flex-col justify-center"> 
+                <h2 className="text-2xl font-semibold text-green-800 mb-2">GO TO BROWSING</h2> 
+                <p className="text-green-600 text-lg">go to public channel!</p> 
               </div>
             </Link>
           </div>
+        </div>
 
-          {/* signout button */}
-          <div className="flex justify-center">
-            <SignOutButton />
-          </div>
+        {/* signout button */}
+        <div className="flex justify-center pt-8">
+          <SignOutButton />
         </div>
       </div>
     </div>
