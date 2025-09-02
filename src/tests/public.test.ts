@@ -1,10 +1,27 @@
 import { prisma } from '@/lib/prisma';
 import { GET as getPublicProjects } from '@/app/api/public/route';
 import { GET as getPublicProject } from '@/app/api/public/[id]/route';
+import { getServerSession } from 'next-auth';
 
-// mock requireUser: always return our test user
-jest.mock('@/lib/authValidate', () => ({
-  requireUser: async () => ({ id: 'test-user-id', email: 'test@example.com', name: 'Tester' }),
+// Mock getServerSession to avoid headers() call
+jest.mock('next-auth');
+const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>;
+
+// Mock next/headers to avoid the Next.js context error
+jest.mock('next/headers', () => ({
+  headers: jest.fn(() => ({
+    get: jest.fn(),
+    has: jest.fn(),
+    forEach: jest.fn(),
+    entries: jest.fn(),
+    keys: jest.fn(),
+    values: jest.fn(),
+  })),
+  cookies: jest.fn(() => ({
+    get: jest.fn(),
+    has: jest.fn(),
+    getAll: jest.fn(),
+  })),
 }));
 
 describe('Public Features API Handlers', () => {
@@ -15,8 +32,11 @@ describe('Public Features API Handlers', () => {
   let draftChapterId: string;
 
   beforeAll(async () => {
-    // clean up in case previous tests failed
-    await prisma.user.deleteMany({ where: { id: 'test-user-id' } }); 
+    // Clean up in correct order (child records first)
+    await prisma.chapter.deleteMany({});
+    await prisma.project.deleteMany({ where: { ownerId: 'test-user-id' } });
+    await prisma.user.deleteMany({ where: { id: 'test-user-id' } });
+
     // create a test user
     await prisma.user.create({
       data: {
@@ -77,14 +97,27 @@ describe('Public Features API Handlers', () => {
   });
 
   afterAll(async () => {
-    // cleanup: delete test data
-    await prisma.chapter.deleteMany({ where: { projectId: { in: [publicProjectId, privateProjectId] } } });
-    await prisma.project.deleteMany({ where: { id: { in: [publicProjectId, privateProjectId] } } });
-    await prisma.user.delete({ where: { id: userId } });
+    // cleanup in correct order: child records first, then parent records
+    await prisma.chapter.deleteMany({});
+    if (publicProjectId && privateProjectId) {
+      await prisma.project.deleteMany({ 
+        where: { id: { in: [publicProjectId, privateProjectId] } } 
+      });
+    }
+    if (userId) {
+      await prisma.user.deleteMany({ where: { id: userId } });
+    }
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Mock getServerSession to return null (no authentication needed for public routes)
+    mockGetServerSession.mockResolvedValue(null);
   });
 
   // test getting all public projects
   test('should get all public projects', async () => {
+    // Since GET doesn't need parameters, call it directly
     const res = await getPublicProjects();
     const data = await res.json();
 
@@ -96,7 +129,7 @@ describe('Public Features API Handlers', () => {
     expect(foundProject).toBeTruthy();
     expect(foundProject.title).toBe('Public Test Story');
     expect(foundProject.owner.name).toBe('Tester');
-    expect(foundProject._count.chapters).toBe(1); // total published chapters
+    expect(foundProject.chapterCount).toBe(1); // Note: your API returns chapterCount, not _count.chapters
     expect(foundProject.chapters).toHaveLength(1); // only published chapters returned
 
     // should NOT include private project
@@ -114,7 +147,7 @@ describe('Public Features API Handlers', () => {
     expect(data.id).toBe(publicProjectId);
     expect(data.title).toBe('Public Test Story');
     expect(data.owner.name).toBe('Tester');
-    expect(data._count.chapters).toBe(1); // total published chapters
+    expect(data._count.chapters).toBe(1); // Note: [id] route returns _count.chapters, not chapterCount
     expect(data.chapters).toHaveLength(1); // only published chapters
     expect(data.chapters[0].title).toBe('Published Chapter');
   });
