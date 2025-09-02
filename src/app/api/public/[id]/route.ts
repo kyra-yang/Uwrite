@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// GET: get a specific published project by id for public viewing
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
 

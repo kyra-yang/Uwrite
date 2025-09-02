@@ -2,32 +2,54 @@ import { prisma } from '@/lib/prisma';
 import { POST as createChapter, GET as listChapters } from '@/app/api/chapters/route';
 import { DELETE as deleteChapter, PUT as updateChapter } from '@/app/api/chapters/[id]/route';
 import { POST as createProject } from '@/app/api/projects/route';
+import { POST as registerHandler } from '@/app/api/register/route';
 
-// mock requireUser: always return our test user
+// Mock requireUser at the top level
 jest.mock('@/lib/authValidate', () => ({
-  requireUser: async () => ({ id: 'test-user-id', email: 'test@example.com', name: 'Tester' }),
-}))
+  requireUser: jest.fn(),
+}));
+
+// Import after mock
+import { requireUser } from '@/lib/authValidate';
 
 describe('Chapters API Handlers', () => {
   let projectId: string;
   let chapterId: string;
+  let testUserId: string;
+  const testEmail = `test_${Date.now()}@example.com`;
+  const testPassword = 'password123';
 
   beforeAll(async () => {
-    // clean up in case previous tests failed
-    await prisma.user.deleteMany({ where: { id: 'test-user-id' } }); 
-    // create a test user
-    await prisma.user.create({
-      data: {
-        id: 'test-user-id',
-        email: 'test@example.com',
-        passwordHash: 'fake',
-        name: 'Tester',
+    // Create test user using register endpoint
+    const registerReq = new Request('http://localhost/api/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        email: testEmail,
+        password: testPassword,
+        name: 'Tester',
+      }),
+    });
+
+    const registerRes = await registerHandler(registerReq);
+    const userData = await registerRes.json();
+    testUserId = userData.id;
+
+    // Setup mock implementation
+    (requireUser as jest.Mock).mockResolvedValue({ 
+      id: testUserId, 
+      email: testEmail, 
+      name: 'Tester' 
     });
 
     // create a test project
     const req = new Request('http://localhost/api/projects', {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({ title: 'Project For Chapters' }),
     });
     const res = await createProject(req);
@@ -38,17 +60,17 @@ describe('Chapters API Handlers', () => {
   afterAll(async () => {
     // delete test chapters
     await prisma.chapter.deleteMany({
-        where: { project: { ownerId: 'test-user-id' } },
+        where: { project: { ownerId: testUserId } },
     });
 
     // delete test projects
     await prisma.project.deleteMany({
-        where: { ownerId: 'test-user-id' },
+        where: { ownerId: testUserId },
     });
 
     // delete test user
     await prisma.user.delete({
-        where: { id: 'test-user-id' },
+        where: { id: testUserId },
     });
   });
 
@@ -56,6 +78,9 @@ describe('Chapters API Handlers', () => {
   test('should create a chapter', async () => {
     const req = new Request('http://localhost/api/chapters', {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({ projectId, title: 'First Chapter' }),
     });
     const res = await createChapter(req);
@@ -69,7 +94,12 @@ describe('Chapters API Handlers', () => {
 
   // list chapters
   test('should list chapters', async () => {
-    const req = new Request(`http://localhost/api/chapters?projectId=${projectId}`, { method: 'GET' });
+    const req = new Request(`http://localhost/api/chapters?projectId=${projectId}`, { 
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
     const res = await listChapters(req);
     const data = await res.json();
 
@@ -82,6 +112,9 @@ describe('Chapters API Handlers', () => {
   test('should update a chapter', async () => {
     const req = new Request(`http://localhost/api/chapters/${chapterId}`, {
       method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         title: 'Updated Chapter',
         contentJson: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello!' }] }] },
@@ -100,7 +133,12 @@ describe('Chapters API Handlers', () => {
   
   // delete chapter
   test('should delete a chapter', async () => {
-    const req = new Request(`http://localhost/api/chapters/${chapterId}`, { method: 'DELETE' });
+    const req = new Request(`http://localhost/api/chapters/${chapterId}`, { 
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
     const res = await deleteChapter(req, { params: Promise.resolve({ id: chapterId }) });
     const data = await res.json();
 

@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import LikeButton from '@/components/LikeButton';
+import CommentsSection from '@/components/CommentsSection';
+import { MessageCircle } from 'lucide-react';
 
 interface Chapter {
   id: string;
@@ -22,11 +25,105 @@ interface ProjectDetail {
     id: string;
     name: string;
   };
-  _count: {
-    chapters: number;
-  };
+  chapterCount: number;
+  likes: number;
+  comments: number;
+  liked: boolean;
   chapters: Chapter[];
 }
+
+const CommentButton = ({ 
+  projectId, 
+  commentCount, 
+  size = 'md',
+  isLoggedIn = false,
+  scrollToComments = false 
+}: {
+  projectId: string;
+  commentCount: number;
+  size?: 'sm' | 'md' | 'lg';
+  isLoggedIn?: boolean;
+  scrollToComments?: boolean;
+}) => {
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  // size config
+  const sizeConfig = {
+    sm: {
+      button: 'px-3 py-1.5 text-xs',
+      icon: 'w-4 h-4',
+      text: 'text-xs font-semibold',
+      scale: 'scale-110'
+    },
+    md: {
+      button: 'px-4 py-2 text-sm',
+      icon: 'w-5 h-5',
+      text: 'text-sm font-semibold',
+      scale: 'scale-120'
+    },
+    lg: {
+      button: 'px-5 py-2.5 text-base',
+      icon: 'w-6 h-6',
+      text: 'text-base font-semibold',
+      scale: 'scale-125'
+    }
+  };
+
+  const config = sizeConfig[size];
+
+  const handleClick = () => {
+    setIsAnimating(true);
+    
+    if (scrollToComments) {
+      const commentsElement = document.getElementById('comments-section');
+      if (commentsElement) {
+        commentsElement.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    } else {
+      window.location.href = `/public/${projectId}/comments`;
+    }
+    
+    // Reset animation after a short delay
+    setTimeout(() => setIsAnimating(false), 600);
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`
+        inline-flex items-center gap-2 rounded-full transition-all duration-300
+        ${config.button}
+        bg-white border border-gray-200 text-gray-600 shadow-sm hover:shadow-md hover:border-gray-300
+        cursor-pointer hover:-translate-y-0.5
+        ${isAnimating ? 'transform-gpu' : ''}
+      `}
+      title={scrollToComments ? "Scroll to comments" : "View comments"}
+    >
+      <div className="relative">
+        <MessageCircle 
+          className={`
+            ${config.icon} transition-all duration-300 text-gray-400 group-hover:text-blue-400
+            ${isAnimating ? `transform ${config.scale}` : ''}
+          `}
+        />
+        {isAnimating && (
+          <div className="absolute inset-0 animate-ping">
+            <MessageCircle className={`${config.icon} text-blue-200 opacity-75`} />
+          </div>
+        )}
+      </div>
+      <span className={`
+        ${config.text} transition-colors duration-300 text-gray-700
+        min-w-[1.5em] text-center
+      `}>
+        {commentCount}
+      </span>
+    </button>
+  );
+};
 
 export default function ProjectDetailPage() {
   const params = useParams();
@@ -112,8 +209,24 @@ export default function ProjectDetailPage() {
               <p className="text-gray-700 mb-4">{project.synopsis}</p>
             )}
             
+            {/* likes and comments */}
+            <div className="flex items-center gap-6 mb-4">
+              <LikeButton 
+                projectId={project.id}
+                initialLikeCount={project.likes}
+                initialLiked={project.liked}
+              />
+              
+              <CommentButton
+                projectId={project.id}
+                commentCount={project.comments}
+                isLoggedIn={true}
+                scrollToComments={true}
+              />
+            </div>
+            
             <div className="flex gap-4 text-sm text-gray-600">
-              <span>{project.chapters.length} of {project._count.chapters} chapters published</span>
+              <span>{project.chapters.length} of {project.chapterCount} chapters published</span>
               <span>Last updated: {new Date(project.updatedAt).toLocaleDateString()}</span>
             </div>
           </div>
@@ -178,6 +291,10 @@ export default function ProjectDetailPage() {
             </div>
           </div>
         )}
+
+        <div className="mt-12" id="comments-section">
+          <CommentsSection projectId={projectId} />
+        </div>
       </div>
     </div>
   );

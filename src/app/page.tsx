@@ -10,7 +10,7 @@ export default function HomePage() {
         <a href="/register" className="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-yellow-700 transition">Register</a>
         <a href="/login" className="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-yellow-700 transition">Login</a>
         <a href="/dashboard" className="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-yellow-700 transition">Dashboard</a>
-        <a href="/public" className="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-yellow-700 transition">Public</a>
+        <a href="/public" className="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-yellow-700 transition">Public Channel</a>
       </div>
     </div>
   );
