@@ -1,4 +1,3 @@
-// src/app/public/[id]/comments/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -29,7 +28,7 @@ export default function CommentsPage() {
   const params = useParams();
   const router = useRouter();
   const projectId = params.id as string;
-  
+
   const [comments, setComments] = useState<Comment[]>([]);
   const [project, setProject] = useState<ProjectInfo | null>(null);
   const [newComment, setNewComment] = useState('');
@@ -63,7 +62,7 @@ export default function CommentsPage() {
       }
     } catch (error) {
       console.error('Error fetching comments:', error);
-      setError('fetching comments failed');
+      setError('Fetching comments failed');
     } finally {
       setLoading(false);
     }
@@ -77,9 +76,7 @@ export default function CommentsPage() {
     try {
       const response = await fetch(`/api/projects/${projectId}/comments`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: newComment }),
       });
 
@@ -88,16 +85,14 @@ export default function CommentsPage() {
         setComments(prev => [comment, ...prev]);
         setNewComment('');
       } else if (response.status === 401) {
-        if (confirm('plaease login to comment.')) {
-          router.push('/login');
-        }
+        if (confirm('Please login to comment.')) router.push('/login');
       } else {
         const error = await response.json();
-        alert(error.error || 'comment failed, please try again.');
+        alert(error.error || 'Comment failed, please try again.');
       }
     } catch (error) {
       console.error('Error posting comment:', error);
-      alert('something went wrong on internet, please try again.');
+      alert('Something went wrong, please try again.');
     } finally {
       setSending(false);
     }
@@ -106,7 +101,7 @@ export default function CommentsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-yellow-50 flex items-center justify-center">
-        <div className="text-lg">loading...</div>
+        <div className="text-lg">Loading...</div>
       </div>
     );
   }
@@ -114,12 +109,12 @@ export default function CommentsPage() {
   return (
     <div className="min-h-screen bg-yellow-50">
       <div className="max-w-4xl mx-auto py-8 px-4">
-        <Link 
+        <Link
           href={`/public/${projectId}`}
           className="inline-flex items-center gap-2 text-blue-600 hover:underline mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
-          back to story
+          Back to story
         </Link>
 
         {project && (
@@ -132,15 +127,15 @@ export default function CommentsPage() {
         <div className="bg-white p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
             <MessageCircle className="w-6 h-6" />
-            all comments ({comments.length})
+            All comments for this project ({comments.length})
           </h2>
 
-          {/* write comment */}
+          {/* Write new comment */}
           <form onSubmit={handleSubmitComment} className="mb-8">
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="write your comment here...(please be kind and respectful *-*)"
+              placeholder="Write your comment here... please be kind and respectful *-*"
               className="w-full p-4 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               rows={4}
             />
@@ -150,17 +145,17 @@ export default function CommentsPage() {
                 disabled={sending || !newComment.trim()}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {sending ? 'publishing...' : 'publish comment'}
+                {sending ? 'Publishing...' : 'Publish comment'}
               </button>
             </div>
           </form>
 
-          {/* comments list */}
+          {/* Comments list */}
           {error && <p className="text-red-600 mb-4">{error}</p>}
-          
+
           {comments.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
-              You are the first one! Leave something here! Remember to be kind and respectful *-*
+              Be the first to comment! Remember to be kind and respectful *-*
             </div>
           ) : (
             <div className="space-y-6">
