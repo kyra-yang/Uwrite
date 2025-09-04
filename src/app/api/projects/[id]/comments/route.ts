@@ -18,7 +18,7 @@ export async function GET(
 
     // fetch
     const comments = await prisma.comment.findMany({
-      where: { projectId },
+      where: { projectId, chapterId: null },
       include: {
         user: {
           select: {
@@ -44,6 +44,7 @@ export async function POST(
   request: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
+  // ensure login
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: 'have not login' }, { status: 401 });
@@ -59,6 +60,7 @@ export async function POST(
   }
 
   try {
+    // ensure project exists and public
     const project = await prisma.project.findUnique({
       where: { id: projectId, visibility: 'PUBLIC' }
     });

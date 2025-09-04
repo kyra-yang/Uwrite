@@ -8,6 +8,7 @@ export async function POST(
   request: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
+  // ensure login
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: 'have not login' }, { status: 401 });
@@ -17,11 +18,13 @@ export async function POST(
   const userId = session.user.id;
 
   try {
+    // ensure project exists and public
     const project = await prisma.project.findUnique({
       where: { id: projectId, visibility: 'PUBLIC' }
     });
     if (!project) return NextResponse.json({ error: 'project not existing' }, { status: 404 });
 
+    // if like exists
     const existingLike = await prisma.like.findUnique({
       where: { userId_projectId: { userId, projectId } }
     });

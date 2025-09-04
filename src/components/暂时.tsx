@@ -1,13 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-// GET: get a specific published project by id for public viewing
-export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
+// GET: get published project by id with chapters for public viewing
+export async function GET(req: Request, ctx: { params: { id: string } }) {
   try {
-
-    const { id: projectId } = await ctx.params;
+    const { id: projectId } = ctx.params;
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
@@ -24,39 +23,23 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
             title: true,
             index: true,
             contentHtml: true,
-            _count: {
-              select: { likes: true }
-            }
+            likes: userId ? { where: { userId }, select: { id: true } } : false,
           }
         },
         _count: {
           select: {
             chapters: { where: { status: 'PUBLISHED' } },
             likes: true,
-            comments: { where: { chapterId: null } },
+            comments: true,
           }
         },
         likes: userId ? { where: { userId }, select: { id: true } } : false,
+        comments: { select: { id: true } },
       }
     });
 
     if (!project) {
-      return NextResponse.json(
-        { error: 'Project not found or not public' },
-        { status: 404 }
-      );
-    }
-
-     // check if liked for this chapter
-    let userLikedChapterIds: string[] = [];
-    if (userId) {
-      const chapterIds = project.chapters.map(ch => ch.id!).filter(Boolean);
-      userLikedChapterIds = (
-        await prisma.like.findMany({
-          where: { userId, chapterId: { in: chapterIds } },
-          select: { chapterId: true },
-        })
-      ).map(like => like.chapterId!);
+      return NextResponse.json({ error: 'Project not found or not public' }, { status: 404 });
     }
 
     // format chapters with likes count and liked
@@ -65,8 +48,8 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
       title: ch.title,
       index: ch.index,
       contentHtml: ch.contentHtml,
-      likes: ch._count.likes,
-      liked: userLikedChapterIds.includes(ch.id),
+      likes: ch.likes ? ch.likes.length : 0,
+      liked: userId ? (ch.likes ? ch.likes.length > 0 : false) : false,
     }));
 
     // format project response
@@ -85,12 +68,9 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     };
 
     return NextResponse.json(formattedProject);
+
   } catch (error) {
-    // any error
     console.error('Error fetching project:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

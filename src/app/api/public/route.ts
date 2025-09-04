@@ -30,7 +30,9 @@ export async function GET() {
               where: { status: 'PUBLISHED' } 
             },
             likes: true,
-            comments: true,
+            comments: {
+              where: { chapterId: null }
+            },
           }
         },
         chapters: {

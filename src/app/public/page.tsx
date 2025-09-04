@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import LikeButton from '@/components/LikeButton';
+import LikeButton from '@/components/projectLikesButton';
 import { MessageCircle } from 'lucide-react';
 
 interface Project {

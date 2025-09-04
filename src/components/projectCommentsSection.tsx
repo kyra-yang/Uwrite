@@ -71,7 +71,7 @@ export default function CommentsSection({
         setComments(data);
       }
     } catch (error) {
-      console.error('fetch comments fail: ', error);
+      console.error('fetch projects comments fail: ', error);
     } finally {
       setLoading(false);
     }
