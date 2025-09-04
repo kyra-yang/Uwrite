@@ -155,8 +155,8 @@ describe('Public Features API Handlers', () => {
     expect(data.id).toBe(publicProjectId);
     expect(data.title).toBe('Public Test Story');
     expect(data.owner.name).toBe('Tester');
-    expect(data._count.chapters).toBe(1); // Note: [id] route returns _count.chapters, not chapterCount
-    expect(data.chapters).toHaveLength(1); // only published chapters
+    expect(data.chapterCount).toBe(1);
+    expect(data.chapters).toHaveLength(1);
     expect(data.chapters[0].title).toBe('Published Chapter');
   });
 
