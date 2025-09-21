@@ -10,10 +10,10 @@ export async function GET(
 ) {
   try {
     const { id: projectId } = await ctx.params;
-    
     const project = await prisma.project.findUnique({
       where: { id: projectId, visibility: 'PUBLIC' }
     });
+    // ensure project exists and public
     if (!project) return NextResponse.json({ error: 'project not existing' }, { status: 404 });
 
     // fetch
@@ -34,7 +34,6 @@ export async function GET(
     return NextResponse.json(comments);
   } catch (error) {
     // any error
-    console.error('get comments error:', error);
     return NextResponse.json({ error: 'server error' }, { status: 500 });
   }
 }
@@ -87,7 +86,6 @@ export async function POST(
     return NextResponse.json(comment, { status: 201 });
   } catch (error) {
     // any error
-    console.error('create comment error:', error);
     return NextResponse.json({ error: 'server error' }, { status: 500 });
   }
 }

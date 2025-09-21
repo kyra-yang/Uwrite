@@ -24,7 +24,7 @@ export async function POST(
     });
     if (!project) return NextResponse.json({ error: 'project not existing' }, { status: 404 });
 
-    // if like exists
+    // check whether like exists
     const existingLike = await prisma.like.findUnique({
       where: { userId_projectId: { userId, projectId } }
     });
@@ -44,7 +44,6 @@ export async function POST(
     }
   } catch (error) {
     // any error
-    console.error('something wrong occurred...about like', error);
     return NextResponse.json({ error: 'something wrong with the server' }, { status: 500 });
   }
 }

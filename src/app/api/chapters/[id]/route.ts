@@ -3,30 +3,25 @@ import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/authValidate';
 import { chapterUpdateSchema } from '@/lib/validators';
 import { htmlToPlainText, jsonToHtml } from '@/lib/content';
-
-// helper function: check if the user owns the chapter (via project)
-async function assertOwnsChapter(chapterId: string, userId: string) {
-  const ch = await prisma.chapter.findUnique({
-    where: { id: chapterId },
-    select: { projectId: true, index: true, project: { select: { ownerId: true } } },
-  });
-  if (!ch || ch.project.ownerId !== userId) throw new Error('FORBIDDEN');
-  return ch;
-}
+import { assertOwnsProject } from '@/lib/projectValidate';
 
 // GET: get specific chapter by id
 export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await ctx.params
+    // ensure user loggerin
     const user = await requireUser()
-    await assertOwnsChapter(id, user.id)
+    // ensure user owns the project and project exists
+    await assertOwnsProject(id, user.id)
+
     // found
     const ch = await prisma.chapter.findUnique({ where: { id } })
+
     return NextResponse.json(ch)
   } catch (e: any) {
     // any error
     if (e.message === 'UNAUTHENTICATED') return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
-    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'project not exists or ownership wrong' }, { status: 403 })
     return NextResponse.json({ error: 'Not Found' }, { status: 404 })
   }
 }
@@ -35,8 +30,10 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
 export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await ctx.params
+    // ensure user loggerin
     const user = await requireUser()
-    await assertOwnsChapter(id, user.id)
+    // ensure user owns the project and project exists
+    await assertOwnsProject(id, user.id)
 
     const body = await req.json()
     const data = chapterUpdateSchema.parse(body)
@@ -64,7 +61,7 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
   } catch (e: any) {
     // any error
     if (e.message === 'UNAUTHENTICATED') return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
-    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'project not exists or ownership wrong' }, { status: 403 })
     return NextResponse.json({ error: 'Bad Request' }, { status: 400 })
   }
 }
@@ -73,8 +70,17 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
 export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await ctx.params
+    // ensure user loggerin
     const user = await requireUser()
-    const ch = await assertOwnsChapter(id, user.id)
+    // ensure user owns the project and project exists
+    await assertOwnsProject(id, user.id)
+
+    // find the chapter to get projectId and index
+    const ch = await prisma.chapter.findUnique({
+      where: { id },
+      select: { id: true, projectId: true, index: true }
+    });
+    if (!ch) throw new Error('Not Found');
 
     // delete and reorder indexes in a transaction
     await prisma.$transaction(async (tx) => {
@@ -89,7 +95,7 @@ export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> 
   } catch (e: any) {
     // any error
     if (e.message === 'UNAUTHENTICATED') return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
-    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'project not exists or ownership wrong' }, { status: 403 })
     return NextResponse.json({ error: 'Bad Request' }, { status: 400 })
   }
 }

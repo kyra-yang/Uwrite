@@ -19,14 +19,14 @@ export async function POST(req: Request) {
     // invalid schema of input
     if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Invalid input' },
+        { error: 'Invalid input schema' },
         { status: 400 }
       );
     }
 
     const { email, password, name } = parsed.data;
 
-    // test if user already exists
+    // if user (email) already exists
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return NextResponse.json(
@@ -55,6 +55,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(user, { status: 201 });
   } catch (err) {
+    // if some unknown error
     console.error(err);
     return NextResponse.json(
       { error: 'Internal Server Error' },

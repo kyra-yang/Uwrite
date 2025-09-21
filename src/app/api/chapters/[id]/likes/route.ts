@@ -50,7 +50,6 @@ export async function POST(
     }
   } catch (error) {
     // any error
-    console.error("Error in chapter like route:", error);
     return NextResponse.json({ error: "Failed to update like" }, { status: 500 });
   }
 }
