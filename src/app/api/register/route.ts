@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return NextResponse.json(
-        { error: 'Email already registered' },
+        { error: 'Email already used' },
         { status: 409 }
       );
     }

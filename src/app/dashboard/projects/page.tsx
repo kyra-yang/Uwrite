@@ -111,12 +111,12 @@ export default function ProjectsPage() {
         <div className="mb-8">
           <Link 
             href="/dashboard" 
-            className="text-blue-600 hover:text-blue-800 underline mb-4 inline-block"
+            className="px-4 py-2 bg-green-100 text-blue-500 hover:text-blue-600 transition border-2 border-teal-200 rounded-lg mb-6 inline-block"
           >
             back to dashboard
           </Link>
           <h1 className="text-4xl font-bold text-gray-800 mb-2">My Projects</h1>
-          <p className="text-gray-600">manage your projects</p>
+          <p className="text-gray-600">manage your projects here</p>
         </div>
 
         {error && (

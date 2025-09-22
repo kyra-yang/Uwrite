@@ -28,7 +28,7 @@ interface Project {
   }[];
 }
 
-// 美化的 CommentButton 组件 - 仿造 LikeButton 样式
+// CommentButton component
 const CommentButton = ({ 
   projectId, 
   commentCount, 

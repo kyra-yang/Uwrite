@@ -9,11 +9,15 @@ export default async function DashboardPage() {
   // if haven't signed in
   if (!session?.user) {
     return (
-      <main className="max-w-xl mx-auto p-20 text-center space-y-6">
-        <h1 className="text-5xl font-bold">Dashboard</h1>
-        <h1 className="text-xl font-bold mb-2  text-green-600">Not signed in</h1>
+      <main className="min-h-screen bg-green-100 flex flex-col items-center justify-center p-4 space-y-20">
+        <h1 className="text-6xl font-bold">Dashboard</h1>
+        <h1 className="text-2xl font-bold mb-2  text-green-600">Have not signed in ~</h1>
         <a className="underline text-blue-600" href="/login">
-          Go to Login
+          Go to Login 
+        </a>
+        <h1 className="text-2xl font-bold mb-2  text-green-600">No account ?</h1>
+        <a className="underline text-blue-600" href="/register">
+          Go to register ^^
         </a>
       </main>
     );
@@ -21,8 +25,8 @@ export default async function DashboardPage() {
 
   // Success: have logined
   return (
-    <div className="min-h-screen bg-yellow-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl bg-white rounded-lg shadow-md p-8 flex flex-col mx-auto my-4" style={{minHeight: '600px'}}>
+    <div className="min-h-screen bg-green-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl bg-white rounded-lg shadow-md p-8 flex flex-col mx-auto my-4  border-2 border-green-600" style={{minHeight: '600px'}}>
         <h1 className="text-7xl font-bold text-center mb-10">Dashboard</h1>
         
         <div className="text-center mb-8">
@@ -50,7 +54,7 @@ export default async function DashboardPage() {
             >
               <div className="bg-green-50 border-2 border-green-200 rounded-lg px-8 py-6 text-center hover:bg-green-100 hover:border-green-300 transition-all duration-200 group-hover:shadow-lg h-full min-h-[140px] flex flex-col justify-center"> 
                 <h2 className="text-2xl font-semibold text-green-800 mb-2">GO TO BROWSING</h2> 
-                <p className="text-green-600 text-lg">go to public channel!</p> 
+                <p className="text-green-600 text-lg">go to public channel !</p> 
               </div>
             </Link>
           </div>

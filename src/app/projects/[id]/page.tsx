@@ -6,19 +6,22 @@ export default async function ProjectDetailPage(ctx: { params: Promise<{ id: str
   const { id } = await ctx.params
 
   const session = await getServerSession(authOptions)
+  // if haven't signed in
   if (!session?.user) {
     return (
       <main className="max-w-xl mx-auto p-6 text-center space-y-6">
-        <h1 className="text-2xl font-bold">Not signed in</h1>
+        <h1 className="text-2xl font-bold">Have not signed in</h1>
         <a className="underline text-blue-600" href="/login">Go to Login</a>
       </main>
     )
   }
 
   return (
-    <main className="max-w-2xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Project Details</h1>
-      <ProjectDetailClient projectId={id} />
-    </main>
+    <div className="min-h-screen bg-yellow-50 flex items-center justify-center">
+      <main className="max-w-2xl mx-auto p-6">
+        <h1 className="text-3xl font-bold mb-6">Project Details</h1>
+        <ProjectDetailClient projectId={id} />
+      </main>
+    </div>
   )
 }
