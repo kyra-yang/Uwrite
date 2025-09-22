@@ -3,8 +3,7 @@
 ## A tiny web application for writing, organizing and reading novels/journals.
 > Projects/Chapters hierarchy, rich text editor (Tiptap) with autosave & local draft recovery, and social features (publish & likes &comments).
 
-![Screenshot](/looklike.png)
-
+![uWrite home Page](public/looklike.png)
 ## Features
 
 1. **Account system**: register / login / change password / logout
