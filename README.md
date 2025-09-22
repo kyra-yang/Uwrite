@@ -1,15 +1,9 @@
 # Uwrite
 
-> A tiny web application for writing, organizing and reading novels/journals.
+## A tiny web application for writing, organizing and reading novels/journals.
 > Projects/Chapters hierarchy, rich text editor (Tiptap) with autosave & local draft recovery, and social features (publish & likes &comments).
 
-![Node](https://img.shields.io/badge/Node-%3E%3D18-339933?logo=node.js)
-![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
-![pnpm](https://img.shields.io/badge/pnpm-9+-F69220?logo=pnpm)
-![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-DB-336791?logo=postgresql)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
-![Jest](https://img.shields.io/badge/Jest-tests-C21325?logo=jest)
+![Screenshot](/looklike.png)
 
 ## Features
 
@@ -20,7 +14,7 @@
 5. **Views**: dashboard (recent projects/chapters), project detail page, public channel
 6. **Responsive UI**: Tailwind
 
-## Todo
+## Todo in future
 1. **improve comments feature**: comment others' comments
 2. **search and tag**: tag projects and add feature allow users search specific projects
 3. **deploy**: deploy through Vercel
