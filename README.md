@@ -32,10 +32,18 @@
 
 ## Quick Start
 
-### 1) Clone & Install
+### Clone & Install
 ```bash
 git clone https://github.com/kyra-yang/Uwrite.git
 cd Uwrite
 pnpm install
 pnpm prisma migrate dev -n init
 pnpm dev
+
+## License
+
+Licensed under the [MIT license](LICENSE.md).
+
+### Notes
+I developed this project with AI's assistant, 
+but all code was reviewed, adapted, and tested by myself.
