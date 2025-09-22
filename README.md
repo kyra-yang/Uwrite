@@ -39,6 +39,7 @@ cd Uwrite
 pnpm install
 pnpm prisma migrate dev -n init
 pnpm dev
+```
 
 ## License
 
