@@ -7,6 +7,7 @@ import { assertOwnsProject } from '@/lib/projectValidate';
 // PUT: Reorder chapters within a project
 export async function PUT(req: Request) {
   try {
+    // Ensure logged in
     const user = await requireUser();
     const body = await req.json();
     const data = chapterReorderSchema.parse(body);

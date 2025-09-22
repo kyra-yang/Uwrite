@@ -140,7 +140,7 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
   }, [projectId])
 
   return (
-    <div className="space-y-6 mt-4">
+    <div className="bg-gray-50 p-6 rounded-lg shadow-lg mb-8 space-y-6 mt-4">
       {project && (
         <div className="space-y-3 border p-3 rounded">
           <h2 className="font-bold text-lg">Edit Project</h2>

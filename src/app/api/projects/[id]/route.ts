@@ -9,14 +9,16 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
   try {
     const { id } = await ctx.params
     const user = await requireUser()
+    // ensure the user owns the project
     await assertOwnsProject(id, user.id)
+
     // found
     const p = await prisma.project.findUnique({ where: { id } })
     return NextResponse.json(p)
   } catch (e: any) {
     // any error
     if (e.message === 'UNAUTHENTICATED') return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
-    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'no such project or wrong ownership' }, { status: 403 })
     return NextResponse.json({ error: 'Not Found' }, { status: 404 })
   }
 }
@@ -26,6 +28,7 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
   try {
     const { id } = await ctx.params
     const user = await requireUser()
+    // ensure the user owns the project
     await assertOwnsProject(id, user.id)
 
     // validate
@@ -50,7 +53,7 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
   } catch (e: any) {
     // any error
     if (e.message === 'UNAUTHENTICATED') return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
-    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'no such project or wrong ownership' }, { status: 403 })
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
@@ -60,6 +63,7 @@ export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> 
   try {
     const { id } = await ctx.params
     const user = await requireUser()
+    // ensure the user owns the project and project exists
     await assertOwnsProject(id, user.id)
 
     // delete
@@ -68,7 +72,7 @@ export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> 
   } catch (e: any) {
     // any error
     if (e.message === 'UNAUTHENTICATED') return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
-    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'no such project or wrong ownership' }, { status: 403 })
     return NextResponse.json({ error: 'Bad Request' }, { status: 400 })
   }
 }

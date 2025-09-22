@@ -16,6 +16,7 @@ export default function RegisterPage() {
     setError(null);
     setLoading(true);
 
+    // call the register API
     const res = await fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -24,6 +25,7 @@ export default function RegisterPage() {
 
     setLoading(false);
 
+    // register success, redirect to login
     if (res.ok) {
       router.push('/login');
     } else {
@@ -33,7 +35,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-yellow-50">
+    <div className="min-h-screen flex items-center justify-center bg-green-100">
     <main className="w-[400px] bg-white p-18 rounded-md shadow-lg">
       <h1 className="text-5xl font-bold mb-6 text-center text-gray-800">
         Register

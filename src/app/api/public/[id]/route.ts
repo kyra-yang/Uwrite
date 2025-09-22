@@ -23,6 +23,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
             id: true,
             title: true,
             index: true,
+            updatedAt: true,
             contentHtml: true,
             _count: {
               select: { likes: true }
@@ -64,6 +65,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
       id: ch.id,
       title: ch.title,
       index: ch.index,
+      updatedAt: ch.updatedAt,
       contentHtml: ch.contentHtml,
       likes: ch._count.likes,
       liked: userLikedChapterIds.includes(ch.id),

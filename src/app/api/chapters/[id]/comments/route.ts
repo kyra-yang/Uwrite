@@ -19,6 +19,7 @@ export async function GET(
     if (!chapter) {
       return NextResponse.json({ error: 'chapter not existing' }, { status: 404 });
     }
+    
     // ensure the corresponding projects is public
     if (chapter.project.visibility != "PUBLIC") return NextResponse.json({ error: 'project not existing' }, { status: 404 });
     
@@ -40,7 +41,6 @@ export async function GET(
     return NextResponse.json(comments);
   } catch (error) {
     // any error
-    console.error('get chapter comments error:', error);
     return NextResponse.json({ error: 'server error' }, { status: 500 });
   }
 }
@@ -100,7 +100,6 @@ export async function POST(
     return NextResponse.json(comment, { status: 201 });
   } catch (error) {
     // any error
-    console.error('create chapter comment error:', error);
     return NextResponse.json({ error: 'server error' }, { status: 500 });
   }
 }

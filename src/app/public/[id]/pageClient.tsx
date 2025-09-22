@@ -17,7 +17,7 @@ interface Chapter {
   title: string;
   index: number;
   contentHtml: string;
-  createdAt: string;
+  updatedAt: string;
   likes?: number;
   liked?: boolean;
   comments?: number;
@@ -172,7 +172,7 @@ export default function ProjectDetailPageClient({ projectId, userId }: Props) {
 
                   <div className="mt-8 pt-4 border-t border-gray-200">
                     <p className="text-sm text-gray-500">
-                      Published: {new Date(selectedChapter.createdAt).toLocaleDateString()}
+                      Published: {new Date(selectedChapter.updatedAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>

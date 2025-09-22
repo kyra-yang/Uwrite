@@ -18,15 +18,18 @@ async function assertOwnsChapter(chapterId: string, userId: string) {
 export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await ctx.params
+    // ensure logged in
     const user = await requireUser()
+    // ensure owns the chapter
     await assertOwnsChapter(id, user.id)
+
     // found
     const ch = await prisma.chapter.findUnique({ where: { id } })
     return NextResponse.json(ch)
   } catch (e: any) {
     // any error
     if (e.message === 'UNAUTHENTICATED') return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
-    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'wrong ownership' }, { status: 403 })
     return NextResponse.json({ error: 'Not Found' }, { status: 404 })
   }
 }
@@ -35,7 +38,9 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
 export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await ctx.params
+    // ensure logged in
     const user = await requireUser()
+    // ensure owns the chapter
     await assertOwnsChapter(id, user.id)
 
     const body = await req.json()
@@ -64,7 +69,7 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
   } catch (e: any) {
     // any error
     if (e.message === 'UNAUTHENTICATED') return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
-    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'ownership wrong' }, { status: 403 })
     return NextResponse.json({ error: 'Bad Request' }, { status: 400 })
   }
 }
@@ -73,7 +78,9 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
 export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await ctx.params
+    // ensure logged in
     const user = await requireUser()
+    // ensure owns the chapter
     const ch = await assertOwnsChapter(id, user.id)
 
     // delete and reorder indexes in a transaction
@@ -89,7 +96,7 @@ export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> 
   } catch (e: any) {
     // any error
     if (e.message === 'UNAUTHENTICATED') return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
-    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (e.message === 'FORBIDDEN') return NextResponse.json({ error: 'ownership wrong' }, { status: 403 })
     return NextResponse.json({ error: 'Bad Request' }, { status: 400 })
   }
 }

@@ -6,6 +6,7 @@ export const projectCreateSchema = z.object({
   synopsis: z.string().max(10_000).optional(),
   visibility: z.enum(['PRIVATE', 'PUBLIC']).optional(),
 });
+
 // projet update
 export const projectUpdateSchema = projectCreateSchema.partial();
 
