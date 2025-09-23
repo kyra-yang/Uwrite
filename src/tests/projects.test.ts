@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from '@/lib/prisma';
 import { POST as createProject, GET as listProjects } from '@/app/api/projects/route';
 import { DELETE as deleteProject, PUT as updateProject } from '@/app/api/projects/[id]/route';
@@ -71,7 +72,7 @@ describe('Projects API Handlers', () => {
 
   // list projects
   test('should list projects', async () => {
-    const req = new Request('http://localhost/api/projects', { 
+    new Request('http://localhost/api/projects', { 
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

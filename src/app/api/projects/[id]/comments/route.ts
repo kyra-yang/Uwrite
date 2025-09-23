@@ -34,6 +34,7 @@ export async function GET(
     return NextResponse.json(comments);
   } catch (error) {
     // any error
+    console.log("fail: ", error);
     return NextResponse.json({ error: 'server error' }, { status: 500 });
   }
 }
@@ -86,6 +87,7 @@ export async function POST(
     return NextResponse.json(comment, { status: 201 });
   } catch (error) {
     // any error
+    console.log("fail: ", error);
     return NextResponse.json({ error: 'server error' }, { status: 500 });
   }
 }

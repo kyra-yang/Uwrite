@@ -5,7 +5,6 @@ import Link from 'next/link';
 import LikeButton from '@/components/projectLikesButton';
 import ChapterLikeButton from '@/components/chapterLikesButton';
 import ChapterCommentsSection from '@/components/chapterCommentsSection';
-import { MessageCircle } from 'lucide-react';
 
 interface Props {
   projectId: string;

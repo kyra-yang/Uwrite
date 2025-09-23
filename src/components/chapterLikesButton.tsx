@@ -18,8 +18,8 @@ export default function ChapterLikeButton({
   initialLiked = false, 
   initialLikeCount = 0,
   size = 'md',
-  isLoggedIn = false,
-  userId
+  isLoggedIn = false
+  
 }: ChapterLikeButtonProps) {
   const [liked, setLiked] = useState(initialLiked);
   const [likeCount, setLikeCount] = useState(initialLikeCount);

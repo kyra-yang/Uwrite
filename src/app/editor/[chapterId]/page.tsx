@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -51,10 +52,11 @@ export default function EditorPage() {
 
   useEffect(() => {
     fetchChapter()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapterId, editor])
 
   if (loading) return <p>loading...</p>
-  if (!chapter) return <p>can't find that chapter!</p>
+  if (!chapter) return <p>can not find that chapter!</p>
 
   return (
     <div className="p-4 space-y-4">

@@ -32,8 +32,7 @@ interface Project {
 const CommentButton = ({ 
   projectId, 
   commentCount, 
-  size = 'md',
-  isLoggedIn = false 
+  size = 'md'
 }: {
   projectId: string;
   commentCount: number;
@@ -121,6 +120,7 @@ export default function PublicPage() {
         const data = await res.json();
         setProjects(data);
       } catch (error) {
+        console.log("fail: ", error)
         setErr('Failed to load stories');
       } finally {
         setLoading(false);

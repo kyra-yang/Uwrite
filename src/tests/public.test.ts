@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from '@/lib/prisma';
 import { GET as getPublicProjects } from '@/app/api/public/route';
 import { GET as getPublicProject } from '@/app/api/public/[id]/route';
@@ -29,8 +30,6 @@ describe('Public Features API Handlers', () => {
   let userId: string;
   let publicProjectId: string;
   let privateProjectId: string;
-  let publishedChapterId: string;
-  let draftChapterId: string;
   const testEmail = `test_${Date.now()}@example.com`;
   const testPassword = 'password123';
 
@@ -79,7 +78,7 @@ describe('Public Features API Handlers', () => {
     privateProjectId = privateProject.id;
 
     // create chapters for public project
-    const publishedChapter = await prisma.chapter.create({
+    await prisma.chapter.create({
       data: {
         title: 'Published Chapter',
         index: 1,
@@ -89,9 +88,8 @@ describe('Public Features API Handlers', () => {
         projectId: publicProjectId,
       },
     });
-    publishedChapterId = publishedChapter.id;
 
-    const draftChapter = await prisma.chapter.create({
+    await prisma.chapter.create({
       data: {
         title: 'Draft Chapter',
         index: 2,
@@ -101,7 +99,6 @@ describe('Public Features API Handlers', () => {
         projectId: publicProjectId,
       },
     });
-    draftChapterId = draftChapter.id;
   });
 
   afterAll(async () => {

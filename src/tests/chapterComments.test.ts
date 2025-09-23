@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from '@/lib/prisma';
 import { GET as getComments, POST as createComment } from '@/app/api/chapters/[id]/comments/route';
 import { POST as registerHandler } from '@/app/api/register/route';
@@ -104,8 +105,8 @@ describe('Chapter Comment API', () => {
   describe('GET Chapter Comments', () => {
     test('should return all comments for public chapter', async () => {
       // create test comments
-      const comment1 = await prisma.comment.create({ data: { content: 'First', userId, chapterId: publicChapterId, projectId: publicProjectId } });
-      const comment2 = await prisma.comment.create({ data: { content: 'Second', userId: otherUserId, chapterId: publicChapterId, projectId: publicProjectId } });
+      await prisma.comment.create({ data: { content: 'First', userId, chapterId: publicChapterId, projectId: publicProjectId } });
+      await prisma.comment.create({ data: { content: 'Second', userId: otherUserId, chapterId: publicChapterId, projectId: publicProjectId } });
 
       const req = new NextRequest(`http://localhost/api/chapters/${publicChapterId}/comments`, { method: 'GET' });
       const res = await getComments(req, { params: Promise.resolve({ id: publicChapterId }) });
