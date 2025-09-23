@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from '@/lib/prisma';
 import { POST as chapterLikeHandler } from '@/app/api/chapters/[id]/likes/route';
 import { POST as registerHandler } from '@/app/api/register/route';

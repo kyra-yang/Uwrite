@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from '@/lib/prisma';
 import { GET as getComments, POST as createComment } from '@/app/api/projects/[id]/comments/route';
 import { POST as registerHandler } from '@/app/api/register/route';
@@ -122,7 +123,7 @@ describe('Comment API Handlers', () => {
     // test getting comments for public project
     test('should get all comments for public project', async () => {
       // Create some test comments
-      const comment1 = await prisma.comment.create({
+      await prisma.comment.create({
         data: {
           content: 'First comment',
           userId,
@@ -130,7 +131,7 @@ describe('Comment API Handlers', () => {
         },
       });
 
-      const comment2 = await prisma.comment.create({
+      await prisma.comment.create({
         data: {
           content: 'Second comment',
           userId: otherUserId,

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import LikeButton from '@/components/projectLikesButton';
 import ChapterLikeButton from '@/components/chapterLikesButton';
 import ChapterCommentsSection from '@/components/chapterCommentsSection';
-import { MessageCircle } from 'lucide-react';
 
 interface Props {
   projectId: string;
@@ -104,7 +103,7 @@ export default function ProjectDetailPageClient({ projectId, userId }: Props) {
 
             {/* Project likes */}
             <div className="flex items-center gap-6 mb-4">
-              <LikeButton projectId={project.id} initialLikeCount={project.likes} initialLiked={project.liked} />
+              <LikeButton projectId={project.id} initialLikeCount={project.likes} initialLiked={project.liked} isLoggedIn={!!userId} />
             </div>
 
             <div className="flex gap-4 text-sm text-gray-600">

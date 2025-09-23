@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from '@/lib/prisma';
 import { POST as createChapter, GET as listChapters } from '@/app/api/chapters/route';
 import { DELETE as deleteChapter, PUT as updateChapter } from '@/app/api/chapters/[id]/route';

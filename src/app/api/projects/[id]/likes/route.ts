@@ -44,6 +44,7 @@ export async function POST(
     }
   } catch (error) {
     // any error
+    console.log("fail: ", error);
     return NextResponse.json({ error: 'something wrong with the server' }, { status: 500 });
   }
 }

@@ -137,6 +137,7 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
   useEffect(() => {
     fetchProject()
     fetchChapters()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
   return (

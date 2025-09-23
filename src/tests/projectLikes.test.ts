@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from '@/lib/prisma';
 import { POST as likeProject } from '@/app/api/projects/[id]/likes/route';
 import { POST as registerHandler } from '@/app/api/register/route';
@@ -160,7 +161,7 @@ describe('Like Project API Handler', () => {
       user: { id: userId, email: testEmail }
     } as any);
 
-    const projectCheck = await prisma.project.findUnique({
+    await prisma.project.findUnique({
       where: { id: publicProjectId }
     });
 

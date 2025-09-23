@@ -50,6 +50,7 @@ export async function POST(
     }
   } catch (error) {
     // any error
+    console.log("fail: ", error);
     return NextResponse.json({ error: "Failed to update like" }, { status: 500 });
   }
 }

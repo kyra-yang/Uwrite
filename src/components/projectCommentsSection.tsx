@@ -29,7 +29,6 @@ export default function CommentsSection({
   showAll = false, 
   maxDisplay = 3,
   isLoggedIn = false,
-  userId,
   size = 'md'
 }: CommentsSectionProps) {
   const [comments, setComments] = useState<Comment[]>([]);
@@ -79,6 +78,7 @@ export default function CommentsSection({
 
   useEffect(() => {
     fetchComments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
   // give comments
