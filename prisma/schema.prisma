@@ -1,79 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model User {
-  id              String            @id @default(cuid())
-  email           String            @unique
-  passwordHash    String
-  name            String
-  projects        Project[]
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-
-  likes           Like[]
-  comments        Comment[]
-
-  following       UserFollow[]      @relation("UserFollowing")
-  followers       UserFollow[]      @relation("UserFollower")
-  projectFollows  ProjectFollow[]
+  id             String          @id @default(cuid())
+  email          String          @unique
+  passwordHash   String
+  name           String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  projects       Project[]
+  comments       Comment[]
+  likes          Like[]
+  projectFollows ProjectFollow[]
+  following      UserFollow[]    @relation("UserFollowing")
+  followers      UserFollow[]    @relation("UserFollower")
 }
 
 model Project {
-  id              String            @id @default(cuid())
-  ownerId         String
-  owner           User              @relation(fields: [ownerId], references: [id])
-  title           String
-  synopsis        String?
-  visibility      Visibility        @default(PRIVATE)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-
-  chapters        Chapter[]
-  likes           Like[]
-  comments        Comment[]
-
-  followers       ProjectFollow[]
+  id         String          @id @default(cuid())
+  title      String
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  ownerId    String
+  synopsis   String?
+  visibility Visibility      @default(PRIVATE)
+  chapters   Chapter[]
+  owner      User            @relation(fields: [ownerId], references: [id])
+  comments   Comment[]
+  likes      Like[]
+  followers  ProjectFollow[]
 
   @@index([ownerId])
 }
 
 model Chapter {
-  id              String            @id @default(cuid())
-  projectId       String
-  project         Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  index           Int
-  title           String
-  contentJson     Json?
-  contentHtml     String?           @db.Text
-  contentText     String?           @db.Text
-  plainText       String?           @db.Text
-  status          ChapterStatus     @default(DRAFT)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id          String        @id @default(cuid())
+  projectId   String
+  index       Int
+  title       String
+  contentJson Json?
+  contentHtml String?
+  plainText   String?
+  status      ChapterStatus @default(DRAFT)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  contentText String?
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  comments    Comment[]
+  likes       Like[]
 
-  likes           Like[]
-  comments        Comment[]
-
-  @@unique([projectId, index])
   @@index([projectId])
 }
 
 model Like {
-  id              String            @id @default(cuid())
-  userId          String
-  projectId       String?
-  chapterId       String?
-  createdAt       DateTime          @default(now())
-
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project         Project?          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  chapter         Chapter?          @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String?
+  chapterId String?
+  createdAt DateTime @default(now())
+  chapter   Chapter? @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, projectId], map: "unique_user_project_like")
   @@unique([userId, chapterId], map: "unique_user_chapter_like")
@@ -81,32 +74,30 @@ model Like {
 }
 
 model Comment {
-  id              String            @id @default(cuid())
-  content         String
-  userId          String
-  projectId       String?
-  chapterId       String?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  projectId String?
+  chapterId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chapter   Chapter? @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project         Project?          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  chapter         Chapter?          @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-
-  @@map("comments")
   @@index([projectId])
   @@index([chapterId])
+  @@map("comments")
 }
 
 model UserFollow {
-  id              String            @id @default(cuid())
-  followerId      String
-  followingId     String
-  createdAt       DateTime          @default(now())
-  
-  follower        User              @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
-  following       User              @relation("UserFollower", fields: [followingId], references: [id], onDelete: Cascade)
-  
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollower", fields: [followingId], references: [id], onDelete: Cascade)
+
   @@unique([followerId, followingId])
   @@index([followerId])
   @@index([followingId])
@@ -114,14 +105,13 @@ model UserFollow {
 }
 
 model ProjectFollow {
-  id              String            @id @default(cuid())
-  userId          String
-  projectId       String
-  createdAt       DateTime          @default(now())
-  
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project         Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, projectId])
   @@index([userId])
   @@index([projectId])
