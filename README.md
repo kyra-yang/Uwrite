@@ -16,8 +16,6 @@
 ## Todo in future
 1. **improve comments feature**: comment others' comments
 2. **search and tag**: tag projects and add feature allow users search specific projects
-3. **deploy**: deploy through Vercel
-
 ---
 
 ## Tech Stack
