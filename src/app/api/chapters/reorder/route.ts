@@ -15,12 +15,12 @@ export async function PUT(req: Request) {
 
     // Ensure the user owns the project
     await assertOwnsProject(data.projectId, user.id);
-
+    
     // Reorder chapters in a transaction
     await prisma.$transaction(
       data.orderedChapterIds.map((id, idx) =>
         prisma.chapter.update({
-          where: { id },
+          where: { id, projectId: data.projectId, },
           data: { index: idx },
         })
       )
